@@ -14,12 +14,16 @@ public class Question {
     @Column(columnDefinition = "TEXT")
     private String questionText;
 
+    @Column(length = 1000)
+    private String imageUrl;
+
     private String optionA;
     private String optionB;
     private String optionC;
     private String optionD;
     private String correctAnswer;
     private Integer difficulty;
+
 
     @ManyToOne
     @JoinColumn(name = "category_id")
@@ -98,4 +102,7 @@ public class Question {
     public void setCategory(Category category) {
         this.category = category;
     }
+
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 }

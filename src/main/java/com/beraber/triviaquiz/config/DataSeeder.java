@@ -25,7 +25,7 @@ public class DataSeeder implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
 
-        // ADMIN KULLANICISI
+        // ADMIN KULLANICISI (Yoksa oluştur)
         if (userRepository.findByUsername("admin") == null) {
             User admin = new User();
             admin.setUsername("admin");
@@ -35,58 +35,64 @@ public class DataSeeder implements CommandLineRunner {
             userRepository.save(admin);
         }
 
-        // KATEGORİ VE SORULAR
-        // Eğer kategori yoksa (sıfırlandıysa) doldur
+        // KATEGORİ VE SORULAR (Eğer kategori yoksa doldur)
         if (categoryRepository.count() == 0) {
 
             // --- 1. TARİH ---
             Category tarih = createCategory("Tarih", "Geçmişten günümüze önemli olaylar.");
-            // Kolay (1)
-            addQuestion(tarih, "İstanbul kaç yılında fethedildi?", "1453", "1071", "1299", "1923", "A", 1);
-            addQuestion(tarih, "Türkiye Cumhuriyeti'nin ilk cumhurbaşkanı kimdir?", "İsmet İnönü", "Atatürk", "Celal Bayar", "Kenan Evren", "B", 1);
-            addQuestion(tarih, "Cumhuriyet kaç yılında ilan edildi?", "1920", "1923", "1919", "1938", "B", 1);
-            // ... Buraya daha fazla kolay soru ekleyebilirsin ...
-
-            // Orta (2)
-            addQuestion(tarih, "Malazgirt Savaşı hangi yıl yapıldı?", "1071", "1299", "1453", "1922", "A", 2);
-            addQuestion(tarih, "Kanuni Sultan Süleyman kaç yıl tahtta kaldı?", "46", "30", "25", "10", "A", 2);
-            addQuestion(tarih, "Osmanlı Devleti'nin kurucusu kimdir?", "Osman Bey", "Orhan Bey", "Fatih Sultan Mehmet", "Yavuz Sultan Selim", "A", 2);
-
-            // Zor (3)
-            addQuestion(tarih, "Plevne Kahramanı kimdir?", "Gazi Osman Paşa", "Seyit Onbaşı", "Kazım Karabekir", "Fevzi Çakmak", "A", 3);
-            addQuestion(tarih, "Lale Devri hangi padişah zamanında yaşanmıştır?", "III. Ahmet", "I. Mahmut", "IV. Murat", "II. Abdülhamit", "A", 3);
-            addQuestion(tarih, "İlk Osmanlı halifesi kimdir?", "Yavuz Sultan Selim", "Kanuni", "Fatih", "II. Murat", "A", 3);
-
+            addQuestion(tarih, "İstanbul kaç yılında fethedildi?", "1453", "1071", "1299", "1923", "A", 1, null);
+            addQuestion(tarih, "Türkiye Cumhuriyeti'nin kurucusu kimdir?", "İsmet İnönü", "Atatürk", "Kazım Karabekir", "Celal Bayar", "B", 1, null);
+            addQuestion(tarih, "Malazgirt Savaşı hangi yıl yapıldı?", "1071", "1299", "1453", "1922", "A", 2, null);
+            addQuestion(tarih, "Plevne Kahramanı kimdir?", "Gazi Osman Paşa", "Seyit Onbaşı", "Kazım Karabekir", "Fevzi Çakmak", "A", 3, null);
 
             // --- 2. BİLİM ---
             Category bilim = createCategory("Bilim", "Fizik, Kimya, Biyoloji ve Uzay.");
-            // Kolay
-            addQuestion(bilim, "Suyun formülü nedir?", "H2O", "CO2", "NaCl", "He", "A", 1);
-            addQuestion(bilim, "Hangi gezegen 'Kızıl Gezegen' olarak bilinir?", "Mars", "Venüs", "Jüpiter", "Satürn", "A", 1);
-
-            // Orta
-            addQuestion(bilim, "Periyodik tabloda 'Fe' hangi elementtir?", "Demir", "Flor", "Fosfor", "Fransiyum", "A", 2);
-            addQuestion(bilim, "DNA'nın yapısını kim keşfetti?", "Watson ve Crick", "Darwin", "Pasteur", "Tesla", "A", 2);
-
-            // Zor
-            addQuestion(bilim, "Işık hızı saniyede yaklaşık kaç km'dir?", "300.000", "150.000", "1.000.000", "3.000", "A", 3);
-            addQuestion(bilim, "Termodinamiğin ikinci yasası ne ile ilgilidir?", "Entropi", "Enerji Korunumu", "Yerçekimi", "Hareket", "A", 3);
-
+            addQuestion(bilim, "Suyun formülü nedir?", "H2O", "CO2", "NaCl", "He", "A", 1, null);
+            addQuestion(bilim, "Hangi gezegen 'Kızıl Gezegen' olarak bilinir?", "Mars", "Venüs", "Jüpiter", "Satürn", "A", 1, null);
+            addQuestion(bilim, "DNA'nın yapısını kim keşfetti?", "Watson ve Crick", "Darwin", "Pasteur", "Tesla", "A", 2, null);
+            addQuestion(bilim, "Işık hızı saniyede yaklaşık kaç km'dir?", "300.000", "150.000", "1.000.000", "3.000", "A", 3, null);
 
             // --- 3. SPOR ---
             Category spor = createCategory("Spor", "Futbol, Basketbol ve Olimpiyatlar.");
-            addQuestion(spor, "Futbol maçı kaç kişiyle oynanır?", "11", "10", "12", "7", "A", 1);
-            addQuestion(spor, "Basketbolda bir takım sahada kaç kişiyle yer alır?", "5", "6", "7", "11", "A", 1);
+            addQuestion(spor, "Futbol maçı kaç kişiyle oynanır?", "11", "10", "12", "7", "A", 1, null);
+            addQuestion(spor, "Basketbolda bir takım sahada kaç kişiyle yer alır?", "5", "6", "7", "11", "A", 1, null);
+            addQuestion(spor, "2010 Dünya Kupası şampiyonu kimdir?", "İspanya", "Hollanda", "Almanya", "Brezilya", "A", 2, null);
+            addQuestion(spor, "NBA tarihinin en çok sayı atan oyuncusu kimdir?", "LeBron James", "Kareem Abdul-Jabbar", "Michael Jordan", "Kobe Bryant", "A", 3, null);
 
-            addQuestion(spor, "2010 Dünya Kupası şampiyonu kimdir?", "İspanya", "Hollanda", "Almanya", "Brezilya", "A", 2);
-            addQuestion(spor, "Hangi spor dalında 'Ace' terimi kullanılır?", "Tenis", "Futbol", "Basketbol", "Yüzme", "A", 2);
+            // --- 4. SANAT (GERİ GELDİ!) ---
+            Category sanat = createCategory("Sanat", "Resim, Müzik ve Sinema.");
+            // Örnek resimli soru
+            addQuestion(sanat, "'Mona Lisa' tablosu kime aittir?", "Van Gogh", "Picasso", "Da Vinci", "Michelangelo", "C", 1, "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg/300px-Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg");
+            addQuestion(sanat, "'Yıldızlı Gece' tablosunun ressamı kimdir?", "Salvador Dali", "Vincent van Gogh", "Rembrandt", "Monet", "B", 2, null);
+            addQuestion(sanat, "Wolfgang Amadeus Mozart hangi ülkenin vatandaşıydı?", "Almanya", "Avusturya", "İtalya", "Fransa", "B", 2, null);
+            addQuestion(sanat, "'Çığlık' tablosu kime aittir?", "Edvard Munch", "Klimt", "Warhol", "Matisse", "A", 3, null);
 
-            addQuestion(spor, "NBA tarihinin en çok sayı atan oyuncusu kimdir?", "LeBron James", "Kareem Abdul-Jabbar", "Michael Jordan", "Kobe Bryant", "A", 3);
-            addQuestion(spor, "Olimpiyat halkalarındaki mavi renk hangi kıtayı temsil eder?", "Avrupa", "Asya", "Afrika", "Amerika", "A", 3);
+            // --- 5. EDEBİYAT (GERİ GELDİ!) ---
+            Category edebiyat = createCategory("Edebiyat", "Romanlar, Şiirler ve Yazarlar.");
+            addQuestion(edebiyat, "'Suç ve Ceza' kitabının yazarı kimdir?", "Tolstoy", "Dostoyevski", "Gogol", "Çehov", "B", 1, null);
+            addQuestion(edebiyat, "İstiklal Marşı'mızın şairi kimdir?", "Mehmet Akif Ersoy", "Namık Kemal", "Ziya Gökalp", "Orhan Veli", "A", 1, null);
+            addQuestion(edebiyat, "Harry Potter serisinin yazarı kimdir?", "J.R.R. Tolkien", "J.K. Rowling", "George R.R. Martin", "Stephen King", "B", 2, null);
+            addQuestion(edebiyat, "'Romeo ve Juliet' eserini kim yazmıştır?", "Charles Dickens", "William Shakespeare", "Victor Hugo", "Mark Twain", "B", 2, null);
 
-            // ... Diğer kategorileri (Sanat, Edebiyat) aynı mantıkla ekleyebilirsin ...
+            // --- 6. GENEL KÜLTÜR ---
+            Category genelKultur = createCategory("Genel Kültür", "Tarih, coğrafya, güncel olaylar ve ortaya karışık sorular.");
 
-            System.out.println("--- TÜM SORULAR ZORLUK SEVİYELERİYLE YÜKLENDİ ---");
+            // KOLAY (1)
+            addQuestion(genelKultur, "Bir yıl kaç gündür?", "360", "365", "366", "350", "B", 1, null);
+            addQuestion(genelKultur, "Türkiye'nin başkenti neresidir?", "İstanbul", "Ankara", "İzmir", "Bursa", "B", 1, "https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/Anitkabir_front.jpg/320px-Anitkabir_front.jpg"); // Anıtkabir resmiyle
+            addQuestion(genelKultur, "İnternette arama yapmak için en çok kullanılan motor hangisidir?", "Bing", "Yahoo", "Google", "DuckDuckGo", "C", 1, null);
+
+            // ORTA (2)
+            addQuestion(genelKultur, "Satranç tahtasında toplam kaç kare vardır?", "32", "64", "100", "16", "B", 2, null);
+            addQuestion(genelKultur, "Japonya'nın para birimi nedir?", "Dolar", "Euro", "Yen", "Won", "C", 2, null);
+            addQuestion(genelKultur, "Resimdeki ünlü yapı hangi şehirdedir?", "Paris", "Londra", "Roma", "New York", "A", 2, "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Tour_Eiffel_Wikimedia_Commons_%28cropped%29.jpg/300px-Tour_Eiffel_Wikimedia_Commons_%28cropped%29.jpg"); // Eyfel Kulesi resmi
+
+            // ZOR (3)
+            addQuestion(genelKultur, "Dünyanın en derin noktası olan Mariana Çukuru hangi okyanustadır?", "Atlas Okyanusu", "Hint Okyanusu", "Büyük Okyanus", "Arktik Okyanusu", "C", 3, null);
+            addQuestion(genelKultur, "Aspirinin hammaddesi olan ağaç hangisidir?", "Söğüt", "Çam", "Meşe", "Kavak", "A", 3, null);
+            addQuestion(genelKultur, "Magna Carta hangi ülkede imzalanmıştır?", "Fransa", "İngiltere", "Almanya", "İtalya", "B", 3, null);
+
+            System.out.println("--- TÜM KATEGORİLER VE SORULAR YÜKLENDİ ---");
         }
     }
 
@@ -97,14 +103,15 @@ public class DataSeeder implements CommandLineRunner {
         return categoryRepository.save(c);
     }
 
-    // GÜNCELLENMİŞ METOD: int difficulty parametresi eklendi
-    private void addQuestion(Category cat, String text, String a, String b, String c, String d, String correct, int difficulty) {
+    // GÜNCELLENMİŞ METOD: String imageUrl parametresi eklendi
+    private void addQuestion(Category cat, String text, String a, String b, String c, String d, String correct, int difficulty, String imgUrl) {
         Question q = new Question();
         q.setCategory(cat);
         q.setQuestionText(text);
         q.setOptionA(a); q.setOptionB(b); q.setOptionC(c); q.setOptionD(d);
         q.setCorrectAnswer(correct);
-        q.setDifficulty(difficulty); // Zorluk seviyesini set ediyoruz
+        q.setDifficulty(difficulty);
+        q.setImageUrl(imgUrl); // Resim URL'sini kaydet
         questionRepository.save(q);
     }
 }

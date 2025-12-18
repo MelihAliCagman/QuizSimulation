@@ -25,11 +25,12 @@
         tr:hover { background-color: #f1f1f1; }
 
         .cat-badge { background-color: #3498db; color: white; padding: 3px 8px; border-radius: 10px; font-size: 11px; }
+        .diff-1 { color: #27ae60; font-weight: bold; }
+        .diff-2 { color: #f39c12; font-weight: bold; }
+        .diff-3 { color: #c0392b; font-weight: bold; }
 
-        /* Zorluk Renkleri */
-        .diff-1 { color: #27ae60; font-weight: bold; } /* Kolay - Yeşil */
-        .diff-2 { color: #f39c12; font-weight: bold; } /* Orta - Turuncu */
-        .diff-3 { color: #c0392b; font-weight: bold; } /* Zor - Kırmızı */
+        /* Resim Önizleme */
+        .img-preview { max-width: 50px; max-height: 50px; border-radius: 5px; vertical-align: middle; }
     </style>
 </head>
 <body>
@@ -49,8 +50,7 @@
 
             <div class="row">
                 <div class="col">
-                    <label>Kategori:</label>
-                    <select id="categorySelect"></select>
+                    <label>Kategori:</label> <select id="categorySelect"></select>
                 </div>
                 <div class="col">
                     <label>Zorluk:</label>
@@ -64,6 +64,8 @@
 
             <textarea id="qText" rows="2" placeholder="Soru metni..."></textarea>
 
+            <input type="text" id="imgUrl" placeholder="🖼️ Resim Linki (Opsiyonel - Boş bırakılabilir)">
+
             <div class="row">
                 <div class="col"><input type="text" id="optA" placeholder="A Şıkkı"></div>
                 <div class="col"><input type="text" id="optB" placeholder="B Şıkkı"></div>
@@ -76,10 +78,10 @@
             <div class="row">
                 <div class="col">
                     <select id="correctOpt">
-                        <option value="A">Doğru Cevap: A</option>
-                        <option value="B">Doğru Cevap: B</option>
-                        <option value="C">Doğru Cevap: C</option>
-                        <option value="D">Doğru Cevap: D</option>
+                        <option value="A">Doğru: A</option>
+                        <option value="B">Doğru: B</option>
+                        <option value="C">Doğru: C</option>
+                        <option value="D">Doğru: D</option>
                     </select>
                 </div>
                 <div class="col">
@@ -100,11 +102,11 @@
                     <thead>
                     <tr>
                         <th width="5%">ID</th>
-                        <th width="15%">Kategori</th>
-                        <th width="45%">Soru</th>
+                        <th width="10%">Kat.</th>
+                        <th width="10%">Görsel</th>
+                        <th width="40%">Soru</th>
                         <th width="10%">Zorluk</th>
-                        <th width="5%">Cvp</th>
-                        <th width="20%">İşlem</th>
+                        <th width="25%">İşlem</th>
                     </tr>
                     </thead>
                     <tbody id="questionsTable"></tbody>
@@ -133,42 +135,25 @@
 </div>
 
 <script>
-    window.onload = function() {
-        loadCategories();
-        loadUsers();
-    };
+    window.onload = function() { loadCategories(); loadUsers(); };
 
-    // --- KATEGORİLERİ YÜKLE ---
     function loadCategories() {
         fetch('/api/categories').then(res => res.json()).then(cats => {
             const s1 = document.getElementById('categorySelect');
             const s2 = document.getElementById('filterCategory');
             s1.innerHTML = '';
 
-            // Filtre selectini temizle ama ilk seçeneği koru
-            // Pratik yöntem: innerHTML = ... yaptıktan sonra döngüye girmek
-
             cats.forEach(c => {
-                const o1 = document.createElement('option');
-                o1.value = c.id; o1.innerText = c.name;
-                s1.appendChild(o1);
-
-                const o2 = document.createElement('option');
-                o2.value = c.id; o2.innerText = c.name;
-                s2.appendChild(o2);
+                const o1 = document.createElement('option'); o1.value = c.id; o1.innerText = c.name; s1.appendChild(o1);
+                const o2 = document.createElement('option'); o2.value = c.id; o2.innerText = c.name; s2.appendChild(o2);
             });
             loadQuestions();
         });
     }
 
-    // --- SORULARI YÜKLE ---
     function loadQuestions() {
         const filterVal = document.getElementById('filterCategory').value;
-        let url = '/api/questions';
-
-        if (filterVal !== 'all') {
-            url = '/api/questions/category/' + filterVal;
-        }
+        let url = filterVal !== 'all' ? '/api/questions/category/' + filterVal : '/api/questions';
 
         fetch(url).then(res => res.json()).then(qs => {
             const tbody = document.getElementById('questionsTable');
@@ -177,19 +162,19 @@
 
             qs.forEach(q => {
                 const catName = q.category ? q.category.name : '-';
-
-                // Zorluk seviyesine göre metin ve renk belirle
-                let diffText = "Kolay";
-                let diffClass = "diff-1";
+                let diffText = "Kolay", diffClass = "diff-1";
                 if(q.difficulty === 2) { diffText = "Orta"; diffClass = "diff-2"; }
                 if(q.difficulty === 3) { diffText = "Zor"; diffClass = "diff-3"; }
+
+                // Görsel varsa küçük önizleme göster
+                let imgHtml = q.imageUrl ? `<img src="${q.imageUrl}" class="img-preview" alt="img">` : '<span style="color:#ccc">-</span>';
 
                 tbody.innerHTML += `<tr>
                     <td>${q.id}</td>
                     <td><span class="cat-badge">${catName}</span></td>
+                    <td>${imgHtml}</td>
                     <td>${q.questionText}</td>
                     <td><span class="${diffClass}">${diffText}</span></td>
-                    <td><b>${q.correctAnswer}</b></td>
                     <td><button class="btn-red" onclick="deleteQuestion(${q.id})">Sil</button></td>
                 </tr>`;
             });
@@ -198,8 +183,9 @@
 
     function addQuestion() {
         const catId = document.getElementById('categorySelect').value;
-        const diff = document.getElementById('difficultySelect').value; // YENİ: Zorluk
+        const diff = document.getElementById('difficultySelect').value;
         const text = document.getElementById('qText').value;
+        const img = document.getElementById('imgUrl').value; // YENİ
         const a = document.getElementById('optA').value;
         const b = document.getElementById('optB').value;
         const c = document.getElementById('optC').value;
@@ -213,16 +199,17 @@
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
                 questionText: text,
+                imageUrl: img, // YENİ: URL'yi gönderiyoruz
                 optionA: a, optionB: b, optionC: c, optionD: d,
                 correctAnswer: correct,
-                difficulty: parseInt(diff), // YENİ: Backend'e int olarak gönderiyoruz
+                difficulty: parseInt(diff),
                 category: { id: catId }
             })
         }).then(res => {
             if(res.ok) {
-                alert("Soru Başarıyla Eklendi!");
+                alert("Eklendi!");
                 document.getElementById('qText').value = "";
-                // Sadece inputları temizle, seçenekler kalsın (seri ekleme için)
+                document.getElementById('imgUrl').value = ""; // Kutuyu temizle
                 document.getElementById('optA').value = "";
                 document.getElementById('optB').value = "";
                 document.getElementById('optC').value = "";
@@ -233,35 +220,20 @@
     }
 
     function deleteQuestion(id) {
-        if(confirm("Silmek istiyor musun?")) {
-            fetch('/api/questions/' + id, { method: 'DELETE' }).then(() => loadQuestions());
-        }
+        if(confirm("Silmek istiyor musun?")) fetch('/api/questions/' + id, { method: 'DELETE' }).then(() => loadQuestions());
     }
 
-    // --- KULLANICILAR ---
     function loadUsers() {
         fetch('/api/users').then(res => res.json()).then(users => {
             const tbody = document.getElementById('usersTable');
             tbody.innerHTML = '';
             users.forEach(u => {
-                let btn = `<button class="btn-red" onclick="deleteUser(${u.id})">Sil</button>`;
-                if(u.username === 'admin') btn = '';
-
-                tbody.innerHTML += `<tr>
-                    <td>${u.username} <br> <small style="color:#aaa">${u.role || 'USER'}</small></td>
-                    <td>${u.totalScore}</td>
-                    <td>${btn}</td>
-                </tr>`;
+                let btn = u.username === 'admin' ? '' : `<button class="btn-red" onclick="deleteUser(${u.id})">Sil</button>`;
+                tbody.innerHTML += `<tr><td>${u.username} <br><small style="color:#aaa">${u.role || 'USER'}</small></td><td>${u.totalScore}</td><td>${btn}</td></tr>`;
             });
         });
     }
-
-    function deleteUser(id) {
-        if(confirm("Kullanıcı silinsin mi?")) {
-            fetch('/api/users/' + id, { method: 'DELETE' }).then(() => loadUsers());
-        }
-    }
+    function deleteUser(id) { if(confirm("Kullanıcı silinsin mi?")) fetch('/api/users/'+id,{method:'DELETE'}).then(()=>loadUsers()); }
 </script>
-
 </body>
 </html>
