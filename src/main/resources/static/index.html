@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Bilgi Yarışması</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+    .container { background-color: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); width: 450px; text-align: center; position: relative; max-height: 90vh; overflow-y: auto; }
+
+    h1, h2, h3 { color: #2c3e50; margin-bottom: 20px; }
+    input[type="text"], input[type="password"] { width: 90%; padding: 10px; margin: 10px 0; border: 1px solid #bdc3c7; border-radius: 5px; font-size: 16px; }
+
+    .btn { display: block; width: 100%; padding: 12px; margin: 10px 0; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; transition: 0.3s; color: white; font-weight: bold; }
+    .btn-primary { background-color: #3498db; } .btn-primary:hover { background-color: #2980b9; }
+    .btn-secondary { background-color: #95a5a6; } .btn-secondary:hover { background-color: #7f8c8d; }
+    .btn-warning { background-color: #f1c40f; color: #2c3e50; }
+
+    /* Zorluk Seçimi Sliderları */
+    .difficulty-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; background: #f9f9f9; padding: 10px; border-radius: 8px; }
+    .difficulty-label { font-weight: bold; width: 60px; text-align: left; }
+    .range-slider { flex: 1; margin: 0 10px; }
+    .count-display { font-weight: bold; color: #3498db; width: 30px; }
+
+    /* Oyun Stilleri */
+    .btn-option { background-color: #ecf0f1; color: #2c3e50; text-align: left; padding-left: 20px; border: 2px solid transparent; width: 100%; margin-bottom: 8px; }
+    .btn-option:hover:not([disabled]) { background-color: #bdc3c7; }
+    .correct { background-color: #2ecc71 !important; color: white !important; }
+    .wrong { background-color: #e74c3c !important; color: white !important; }
+
+    /* Ekranlar */
+    .screen { display: none; }
+    .active-screen { display: block; animation: fadeIn 0.5s; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .score-change { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 40px; font-weight: bold; opacity: 0; pointer-events: none; }
+    .anim-plus { color: green; animation: floatUp 1s forwards; }
+    .anim-minus { color: red; animation: floatUp 1s forwards; }
+    @keyframes floatUp { 0% { opacity: 1; top: 50%; } 100% { opacity: 0; top: 20%; } }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <div id="login-screen" class="screen active-screen">
+    <h1>Bilgi Yarışması</h1>
+    <input type="text" id="username" placeholder="Kullanıcı Adı">
+    <input type="password" id="password" placeholder="Şifre">
+    <button class="btn btn-primary" onclick="login()">Giriş Yap</button>
+    <button class="btn btn-secondary" onclick="register()">Kayıt Ol</button>
+    <p id="login-msg" style="color:red;"></p>
+  </div>
+
+  <div id="category-screen" class="screen">
+    <h3>Hoşgeldin, <span id="display-username" style="color:#3498db;"></span>!</h3>
+    <p>Puanın: <span id="menu-score" style="font-weight:bold;">0</span></p>
+    <button class="btn btn-warning" onclick="showLeaderboard()">🏆 Liderlik Tablosu</button>
+    <hr>
+    <p>Kategori Seç:</p>
+    <div id="category-list"></div>
+    <button class="btn btn-secondary" onclick="logout()" style="margin-top:20px;">Çıkış</button>
+  </div>
+
+  <div id="settings-screen" class="screen">
+    <h2>Oyun Ayarları</h2>
+    <p>Toplam 10 soru olacak şekilde dağılımı seç:</p>
+
+    <div class="difficulty-row">
+      <span class="difficulty-label">Kolay</span>
+      <input type="range" min="0" max="10" value="3" class="range-slider" id="easyRange" oninput="updateTotal()">
+      <span class="count-display" id="easyCount">3</span>
+    </div>
+    <div class="difficulty-row">
+      <span class="difficulty-label">Orta</span>
+      <input type="range" min="0" max="10" value="4" class="range-slider" id="mediumRange" oninput="updateTotal()">
+      <span class="count-display" id="mediumCount">4</span>
+    </div>
+    <div class="difficulty-row">
+      <span class="difficulty-label">Zor</span>
+      <input type="range" min="0" max="10" value="3" class="range-slider" id="hardRange" oninput="updateTotal()">
+      <span class="count-display" id="hardCount">3</span>
+    </div>
+
+    <p>Toplam Soru: <span id="totalQuestions" style="font-weight:bold; color:black;">10</span>/10</p>
+    <p id="settings-msg" style="color:red; font-size:12px;"></p>
+
+    <button class="btn btn-primary" onclick="startGame()">Oyuna Başla</button>
+    <button class="btn btn-secondary" onclick="showScreen('category-screen')">Geri Dön</button>
+  </div>
+
+  <div id="question-screen" class="screen">
+    <div style="display:flex; justify-content:space-between; font-weight:bold;">
+      <span>Puan: <span id="score">0</span></span>
+      <span style="color:#e74c3c;">Süre: <span id="timer">25</span></span>
+    </div>
+    <div style="text-align:right;"><button id="btn-joker" class="btn btn-warning" style="width:auto; padding:5px 10px;" onclick="useJoker()">🃏 %50</button></div>
+
+    <h3 id="question-text" style="min-height:50px; margin-top:10px;">...</h3>
+    <div id="options-list"></div>
+    <p id="feedback-msg" style="font-weight:bold; height:20px;"></p>
+    <div id="score-anim" class="score-change"></div>
+  </div>
+
+  <div id="result-screen" class="screen">
+    <h1>Oyun Bitti!</h1>
+    <div style="font-size:50px;">🏆</div>
+    <p>Bu Tur Puanın: <span id="final-score" style="font-weight:bold; font-size:24px;">0</span></p>
+    <button class="btn btn-primary" onclick="showScreen('category-screen')">Ana Menü</button>
+  </div>
+
+  <div id="leaderboard-screen" class="screen">
+    <h2>🏆 En İyiler</h2>
+    <table style="width:100%; text-align:left;">
+      <thead><tr><th>#</th><th>Kullanıcı</th><th>Puan</th></tr></thead>
+      <tbody id="leaderboard-body"></tbody>
+    </table>
+    <button class="btn btn-primary" onclick="showScreen('category-screen')" style="margin-top:20px;">Geri</button>
+  </div>
+
+</div>
+
+<script>
+  let currentUser = null;
+  let selectedCategoryId = null;
+  let currentQuestions = [];
+  let qIndex = 0;
+  let score = 0;
+  let timerInterval;
+
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
+    document.getElementById(id).classList.add('active-screen');
+    if(id === 'category-screen' && currentUser) {
+      document.getElementById('menu-score').innerText = currentUser.totalScore;
+    }
+  }
+
+  // --- AYARLAR VE SLIDER MANTIĞI ---
+  function updateTotal() {
+    const e = parseInt(document.getElementById('easyRange').value);
+    const m = parseInt(document.getElementById('mediumRange').value);
+    const h = parseInt(document.getElementById('hardRange').value);
+
+    document.getElementById('easyCount').innerText = e;
+    document.getElementById('mediumCount').innerText = m;
+    document.getElementById('hardCount').innerText = h;
+
+    const total = e + m + h;
+    document.getElementById('totalQuestions').innerText = total;
+
+    const btn = document.querySelector('#settings-screen .btn-primary');
+    const msg = document.getElementById('settings-msg');
+
+    if(total !== 10) {
+      btn.disabled = true;
+      btn.style.opacity = 0.5;
+      msg.innerText = "Lütfen toplam 10 soru olacak şekilde ayarlayın!";
+      document.getElementById('totalQuestions').style.color = 'red';
+    } else {
+      btn.disabled = false;
+      btn.style.opacity = 1;
+      msg.innerText = "";
+      document.getElementById('totalQuestions').style.color = 'green';
+    }
+  }
+
+  // --- OYUN AKIŞI ---
+  function prepareGame(catId) {
+    selectedCategoryId = catId;
+    showScreen('settings-screen');
+    updateTotal(); // Sliderları sıfırla/kontrol et
+  }
+
+  function startGame() {
+    const e = document.getElementById('easyRange').value;
+    const m = document.getElementById('mediumRange').value;
+    const h = document.getElementById('hardRange').value;
+
+    // Backend'e özel oyun isteği at
+    fetch(`/api/questions/start?categoryId=${selectedCategoryId}&easy=${e}&medium=${m}&hard=${h}`)
+            .then(res => res.json())
+            .then(qs => {
+              if(qs.length === 0) { alert("Yeterli soru yok!"); return; }
+              currentQuestions = qs;
+              qIndex = 0;
+              score = 0;
+              document.getElementById('btn-joker').disabled = false;
+              showScreen('question-screen');
+              showQuestion();
+            });
+  }
+
+  function showQuestion() {
+    if(qIndex >= currentQuestions.length) { endGame(); return; }
+    const q = currentQuestions[qIndex];
+    document.getElementById('question-text').innerText = q.questionText + ` (Zorluk: ${q.difficulty})`;
+    document.getElementById('score').innerText = score;
+    document.getElementById('feedback-msg').innerText = "";
+
+    startTimer();
+
+    const list = document.getElementById('options-list');
+    list.innerHTML = '';
+    [{k:'A',t:q.optionA}, {k:'B',t:q.optionB}, {k:'C',t:q.optionC}, {k:'D',t:q.optionD}].forEach(o => {
+      const btn = document.createElement('button');
+      btn.className = 'btn btn-option';
+      btn.id = 'opt-'+o.k;
+      btn.innerText = o.k + ") " + o.t;
+      btn.onclick = () => checkAnswer(q.id, o.k, btn);
+      list.appendChild(btn);
+    });
+  }
+
+  function checkAnswer(qId, selected, btn) {
+    clearInterval(timerInterval);
+    document.querySelectorAll('.btn-option').forEach(b => b.disabled = true);
+
+    fetch('/api/questions/check', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({questionId: qId, selectedOption: selected})
+    }).then(res => res.json()).then(res => {
+      const fb = document.getElementById('feedback-msg');
+      const anim = document.getElementById('score-anim');
+
+      // Puan animasyonu ve güncelleme
+      score += res.pointsChange;
+      document.getElementById('score').innerText = score;
+
+      if(res.correct) {
+        btn.classList.add('correct');
+        fb.innerText = res.message + " (+" + res.pointsChange + ")";
+        fb.style.color = "green";
+        anim.innerText = "+" + res.pointsChange;
+        anim.className = "score-change anim-plus";
+      } else {
+        btn.classList.add('wrong');
+        fb.innerText = res.message + " Doğru: " + res.correctAnswer + " (" + res.pointsChange + ")";
+        fb.style.color = "red";
+        anim.innerText = res.pointsChange;
+        anim.className = "score-change anim-minus";
+      }
+
+      // Animasyonu sıfırlamak için timeout
+      setTimeout(() => { anim.className = "score-change"; }, 1000);
+      setTimeout(nextQuestion, 2000);
+    });
+  }
+
+  function nextQuestion() { qIndex++; showQuestion(); }
+
+  function endGame() {
+    showScreen('result-screen');
+    document.getElementById('final-score').innerText = score;
+    if(currentUser) {
+      fetch(`/api/users/score/${currentUser.id}?score=${score}`, { method: 'POST' })
+              .then(() => currentUser.totalScore += score);
+    }
+  }
+
+  // --- LOGIN / REGISTER / KATEGORİ ---
+  function login() {
+    const u = document.getElementById('username').value;
+    const p = document.getElementById('password').value;
+    fetch('/api/users/login', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({username:u, password:p})
+    }).then(res=>res.text()).then(t => {
+      if(!t) { document.getElementById('login-msg').innerText="Hata!"; return; }
+      currentUser = JSON.parse(t);
+      if(currentUser.role === 'ADMIN') window.location.href='/admin.html';
+      else {
+        document.getElementById('display-username').innerText=currentUser.username;
+        document.getElementById('menu-score').innerText=currentUser.totalScore;
+        loadCats(); showScreen('category-screen');
+      }
+    });
+  }
+
+  function register() {
+    const u = document.getElementById('username').value;
+    const p = document.getElementById('password').value;
+    fetch('/api/users/register', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({username:u, password:p})
+    }).then(res=>res.json()).then(u=>{
+      if(u) alert("Kayıt Başarılı!"); else alert("Kullanıcı adı dolu!");
+    });
+  }
+
+  function loadCats() {
+    fetch('/api/categories').then(res=>res.json()).then(cats=>{
+      const list = document.getElementById('category-list');
+      list.innerHTML = '';
+      cats.forEach(c => {
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-primary';
+        btn.innerText = c.name;
+        btn.onclick = () => prepareGame(c.id); // Direkt başlatma, ayara git
+        list.appendChild(btn);
+      });
+    });
+  }
+
+  function logout() { currentUser=null; showScreen('login-screen'); }
+
+  // --- DİĞERLERİ ---
+  function startTimer() {
+    clearInterval(timerInterval);
+    let t = 25;
+    document.getElementById('timer').innerText = t;
+    timerInterval = setInterval(()=>{
+      t--; document.getElementById('timer').innerText = t;
+      if(t<=0) { clearInterval(timerInterval); document.querySelectorAll('.btn-option').forEach(b=>b.disabled=true); setTimeout(nextQuestion, 2000); }
+    }, 1000);
+  }
+
+  function useJoker() {
+    const q = currentQuestions[qIndex];
+    fetch('/api/questions/joker/fifty-fifty/'+q.id).then(res=>res.json()).then(opts=>{
+      opts.forEach(k=>document.getElementById('opt-'+k).style.visibility='hidden');
+      document.getElementById('btn-joker').disabled=true;
+    });
+  }
+
+  function showLeaderboard() {
+    fetch('/api/users/leaderboard').then(res=>res.json()).then(users=>{
+      const b = document.getElementById('leaderboard-body'); b.innerHTML='';
+      users.forEach((u,i)=> b.innerHTML+=`<tr><td>${i+1}</td><td>${u.username}</td><td>${u.totalScore}</td></tr>`);
+      showScreen('leaderboard-screen');
+    });
+  }
+</script>
+</body>
+</html>

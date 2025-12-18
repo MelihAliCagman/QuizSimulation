@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Paneli</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #2c3e50; color: white; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; display: flex; gap: 20px; }
+        .column { flex: 1; min-width: 500px; }
+
+        .card { background-color: white; color: #333; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h2 { color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 0; }
+
+        input, select, textarea { width: 100%; padding: 10px; margin: 5px 0 15px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        .row { display: flex; gap: 10px; } .col { flex: 1; }
+
+        button { padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        button:hover { opacity: 0.9; }
+        .btn-green { background-color: #27ae60; color: white; }
+        .btn-red { background-color: #c0392b; color: white; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background-color: #f8f9fa; color: #7f8c8d; }
+        tr:hover { background-color: #f1f1f1; }
+
+        .cat-badge { background-color: #3498db; color: white; padding: 3px 8px; border-radius: 10px; font-size: 11px; }
+
+        /* Zorluk Renkleri */
+        .diff-1 { color: #27ae60; font-weight: bold; } /* Kolay - Yeşil */
+        .diff-2 { color: #f39c12; font-weight: bold; } /* Orta - Turuncu */
+        .diff-3 { color: #c0392b; font-weight: bold; } /* Zor - Kırmızı */
+    </style>
+</head>
+<body>
+
+<div class="container" style="display:block; margin-bottom:10px;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h1>🛠️ Yönetici Paneli</h1>
+        <button class="btn-red" onclick="window.location.href='/'">Çıkış Yap</button>
+    </div>
+</div>
+
+<div class="container">
+
+    <div class="column">
+        <div class="card">
+            <h2>➕ Soru Ekle</h2>
+
+            <div class="row">
+                <div class="col">
+                    <label>Kategori:</label>
+                    <select id="categorySelect"></select>
+                </div>
+                <div class="col">
+                    <label>Zorluk:</label>
+                    <select id="difficultySelect">
+                        <option value="1">🟢 Kolay (1)</option>
+                        <option value="2">🟠 Orta (2)</option>
+                        <option value="3">🔴 Zor (3)</option>
+                    </select>
+                </div>
+            </div>
+
+            <textarea id="qText" rows="2" placeholder="Soru metni..."></textarea>
+
+            <div class="row">
+                <div class="col"><input type="text" id="optA" placeholder="A Şıkkı"></div>
+                <div class="col"><input type="text" id="optB" placeholder="B Şıkkı"></div>
+            </div>
+            <div class="row">
+                <div class="col"><input type="text" id="optC" placeholder="C Şıkkı"></div>
+                <div class="col"><input type="text" id="optD" placeholder="D Şıkkı"></div>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <select id="correctOpt">
+                        <option value="A">Doğru Cevap: A</option>
+                        <option value="B">Doğru Cevap: B</option>
+                        <option value="C">Doğru Cevap: C</option>
+                        <option value="D">Doğru Cevap: D</option>
+                    </select>
+                </div>
+                <div class="col">
+                    <button class="btn-green" style="width:100%" onclick="addQuestion()">Kaydet</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <h2>📋 Sorular</h2>
+                <select id="filterCategory" onchange="loadQuestions()" style="width: 180px; margin:0;">
+                    <option value="all" selected>Tüm Kategoriler</option>
+                </select>
+            </div>
+            <div style="max-height: 500px; overflow-y: auto;">
+                <table>
+                    <thead>
+                    <tr>
+                        <th width="5%">ID</th>
+                        <th width="15%">Kategori</th>
+                        <th width="45%">Soru</th>
+                        <th width="10%">Zorluk</th>
+                        <th width="5%">Cvp</th>
+                        <th width="20%">İşlem</th>
+                    </tr>
+                    </thead>
+                    <tbody id="questionsTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="column" style="max-width: 400px;">
+        <div class="card">
+            <h2>👥 Kullanıcılar</h2>
+            <div style="max-height: 700px; overflow-y: auto;">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Kullanıcı</th>
+                        <th>Puan</th>
+                        <th>İşlem</th>
+                    </tr>
+                    </thead>
+                    <tbody id="usersTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.onload = function() {
+        loadCategories();
+        loadUsers();
+    };
+
+    // --- KATEGORİLERİ YÜKLE ---
+    function loadCategories() {
+        fetch('/api/categories').then(res => res.json()).then(cats => {
+            const s1 = document.getElementById('categorySelect');
+            const s2 = document.getElementById('filterCategory');
+            s1.innerHTML = '';
+
+            // Filtre selectini temizle ama ilk seçeneği koru
+            // Pratik yöntem: innerHTML = ... yaptıktan sonra döngüye girmek
+
+            cats.forEach(c => {
+                const o1 = document.createElement('option');
+                o1.value = c.id; o1.innerText = c.name;
+                s1.appendChild(o1);
+
+                const o2 = document.createElement('option');
+                o2.value = c.id; o2.innerText = c.name;
+                s2.appendChild(o2);
+            });
+            loadQuestions();
+        });
+    }
+
+    // --- SORULARI YÜKLE ---
+    function loadQuestions() {
+        const filterVal = document.getElementById('filterCategory').value;
+        let url = '/api/questions';
+
+        if (filterVal !== 'all') {
+            url = '/api/questions/category/' + filterVal;
+        }
+
+        fetch(url).then(res => res.json()).then(qs => {
+            const tbody = document.getElementById('questionsTable');
+            tbody.innerHTML = '';
+            qs.sort((a,b) => b.id - a.id);
+
+            qs.forEach(q => {
+                const catName = q.category ? q.category.name : '-';
+
+                // Zorluk seviyesine göre metin ve renk belirle
+                let diffText = "Kolay";
+                let diffClass = "diff-1";
+                if(q.difficulty === 2) { diffText = "Orta"; diffClass = "diff-2"; }
+                if(q.difficulty === 3) { diffText = "Zor"; diffClass = "diff-3"; }
+
+                tbody.innerHTML += `<tr>
+                    <td>${q.id}</td>
+                    <td><span class="cat-badge">${catName}</span></td>
+                    <td>${q.questionText}</td>
+                    <td><span class="${diffClass}">${diffText}</span></td>
+                    <td><b>${q.correctAnswer}</b></td>
+                    <td><button class="btn-red" onclick="deleteQuestion(${q.id})">Sil</button></td>
+                </tr>`;
+            });
+        });
+    }
+
+    function addQuestion() {
+        const catId = document.getElementById('categorySelect').value;
+        const diff = document.getElementById('difficultySelect').value; // YENİ: Zorluk
+        const text = document.getElementById('qText').value;
+        const a = document.getElementById('optA').value;
+        const b = document.getElementById('optB').value;
+        const c = document.getElementById('optC').value;
+        const d = document.getElementById('optD').value;
+        const correct = document.getElementById('correctOpt').value;
+
+        if(!text || !a) { alert("Eksik bilgi!"); return; }
+
+        fetch('/api/questions', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                questionText: text,
+                optionA: a, optionB: b, optionC: c, optionD: d,
+                correctAnswer: correct,
+                difficulty: parseInt(diff), // YENİ: Backend'e int olarak gönderiyoruz
+                category: { id: catId }
+            })
+        }).then(res => {
+            if(res.ok) {
+                alert("Soru Başarıyla Eklendi!");
+                document.getElementById('qText').value = "";
+                // Sadece inputları temizle, seçenekler kalsın (seri ekleme için)
+                document.getElementById('optA').value = "";
+                document.getElementById('optB').value = "";
+                document.getElementById('optC').value = "";
+                document.getElementById('optD').value = "";
+                loadQuestions();
+            }
+        });
+    }
+
+    function deleteQuestion(id) {
+        if(confirm("Silmek istiyor musun?")) {
+            fetch('/api/questions/' + id, { method: 'DELETE' }).then(() => loadQuestions());
+        }
+    }
+
+    // --- KULLANICILAR ---
+    function loadUsers() {
+        fetch('/api/users').then(res => res.json()).then(users => {
+            const tbody = document.getElementById('usersTable');
+            tbody.innerHTML = '';
+            users.forEach(u => {
+                let btn = `<button class="btn-red" onclick="deleteUser(${u.id})">Sil</button>`;
+                if(u.username === 'admin') btn = '';
+
+                tbody.innerHTML += `<tr>
+                    <td>${u.username} <br> <small style="color:#aaa">${u.role || 'USER'}</small></td>
+                    <td>${u.totalScore}</td>
+                    <td>${btn}</td>
+                </tr>`;
+            });
+        });
+    }
+
+    function deleteUser(id) {
+        if(confirm("Kullanıcı silinsin mi?")) {
+            fetch('/api/users/' + id, { method: 'DELETE' }).then(() => loadUsers());
+        }
+    }
+</script>
+
+</body>
+</html>
