@@ -53,6 +53,9 @@
         .d1 { color: var(--good); font-weight: 800; } .d2 { color: var(--warn); font-weight: 800; } .d3 { color: var(--bad); font-weight: 800; }
         .img-preview { width: 44px; height: 44px; object-fit: cover; border-radius: 8px; }
         .answer { color: var(--good); font-weight: 800; }
+        .opts { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 5px; font-size: 12px; color: var(--muted); }
+        .opt-ok { color: var(--good); font-weight: 800; }
+        .btn-sm { padding: 6px 12px; }
         .tools { display: flex; gap: 10px; margin-bottom: 12px; }
         .tools input, .tools select { margin: 0; }
         .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(30px); opacity: 0; transition: .3s; background: #1e1b3a; border: 1px solid var(--border); padding: 12px 20px; border-radius: 14px; font-weight: 700; }
@@ -108,7 +111,10 @@
                             <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option>
                         </select>
                     </div>
-                    <div class="col"><button class="btn-green" style="width:100%; margin-bottom:14px" onclick="addQuestion()">Kaydet</button></div>
+                    <div class="col" style="display:flex; gap:8px">
+                        <button class="btn-green" id="saveBtn" style="flex:1; margin-bottom:14px" onclick="addQuestion()">Kaydet</button>
+                        <button class="btn-ghost" id="cancelBtn" style="display:none; margin-bottom:14px" onclick="resetForm()">Vazgeç</button>
+                    </div>
                 </div>
             </div>
 
@@ -126,7 +132,7 @@
                 </div>
                 <div class="table-wrap">
                     <table>
-                        <thead><tr><th>ID</th><th>Kat.</th><th>Görsel</th><th>Soru</th><th>Cevap</th><th>Zorluk</th><th></th></tr></thead>
+                        <thead><tr><th>ID</th><th>Kat.</th><th>Görsel</th><th>Soru ve şıklar</th><th>Cevap</th><th>Zorluk</th><th></th></tr></thead>
                         <tbody id="questionsTable"></tbody>
                     </table>
                 </div>
@@ -215,12 +221,32 @@
             <td>${q.id}</td>
             <td><span class="cat-badge">${esc(q.category ? q.category.name : '-')}</span></td>
             <td>${q.imageUrl ? `<img src="${esc(q.imageUrl)}" class="img-preview" alt="">` : '<span style="color:#666">-</span>'}</td>
-            <td>${esc(q.questionText)}</td>
+            <td>${esc(q.questionText)}<div class="opts">${['A', 'B', 'C', 'D'].map(k =>
+                `<span class="${q.correctAnswer === k ? 'opt-ok' : ''}">${k}) ${esc(q['option' + k])}</span>`).join('')}</div></td>
             <td class="answer">${esc(q.correctAnswer)}</td>
             <td><span class="d${q.difficulty}">${names[q.difficulty] || '-'}</span></td>
-            <td><button class="btn-red" onclick="deleteQuestion(${q.id})">Sil</button></td>
+            <td style="white-space:nowrap"><button class="btn-ghost btn-sm" onclick="editQuestion(${q.id})">Düzenle</button> <button class="btn-red" onclick="deleteQuestion(${q.id})">Sil</button></td>
         </tr>`).join('');
         $('shown').textContent = rows.length;
+    }
+
+    let editingId = null;
+
+    function editQuestion(id) {
+        const q = allQuestions.find(x => x.id === id); if (!q) return;
+        editingId = id;
+        if (q.category) $('categorySelect').value = q.category.id;
+        $('difficultySelect').value = q.difficulty; $('correctOpt').value = q.correctAnswer;
+        $('qText').value = q.questionText || ''; $('imgUrl').value = q.imageUrl || '';
+        ['A', 'B', 'C', 'D'].forEach(k => $('opt' + k).value = q['option' + k] || '');
+        $('saveBtn').textContent = `Güncelle (#${id})`; $('cancelBtn').style.display = '';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function resetForm() {
+        editingId = null;
+        ['qText', 'imgUrl', 'optA', 'optB', 'optC', 'optD'].forEach(id => $(id).value = '');
+        $('saveBtn').textContent = 'Kaydet'; $('cancelBtn').style.display = 'none';
     }
 
     function addQuestion() {
@@ -229,6 +255,7 @@
         fetch('/api/questions', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+                id: editingId,
                 questionText: v('qText'), imageUrl: v('imgUrl'),
                 optionA: v('optA'), optionB: v('optB'), optionC: v('optC'), optionD: v('optD'),
                 correctAnswer: $('correctOpt').value, difficulty: parseInt($('difficultySelect').value),
@@ -236,9 +263,8 @@
             })
         }).then(r => {
             if (!r.ok) { toast('Kaydedilemedi', 'err'); return; }
-            toast('Soru eklendi ✔');
-            ['qText', 'imgUrl', 'optA', 'optB', 'optC', 'optD'].forEach(id => $(id).value = '');
-            loadQuestions();
+            toast(editingId ? 'Soru güncellendi ✔' : 'Soru eklendi ✔');
+            resetForm(); loadQuestions();
         });
     }
 
