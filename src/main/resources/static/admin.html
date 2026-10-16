@@ -2,238 +2,265 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>Admin Paneli</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Yönetici Paneli</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #2c3e50; color: white; padding: 20px; }
-        .container { max-width: 1200px; margin: 0 auto; display: flex; gap: 20px; }
-        .column { flex: 1; min-width: 500px; }
+        :root {
+            --bg: #0f0c29; --card: rgba(255,255,255,.07); --border: rgba(255,255,255,.14);
+            --text: #f4f4ff; --muted: #a9a8c8; --accent: #7c5cff; --accent2: #00d4ff;
+            --good: #2ee59d; --bad: #ff5c7a; --warn: #ffc857;
+        }
+        * { box-sizing: border-box; }
+        body { margin: 0; padding: 24px; font-family: 'Segoe UI', system-ui, sans-serif; color: var(--text); min-height: 100vh;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); background-attachment: fixed; }
+        .wrap { max-width: 1280px; margin: 0 auto; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        h1 { margin: 0; font-size: 28px; }
+        .grad { background: linear-gradient(90deg, var(--accent2), var(--accent), #ff6ec7); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        h2 { margin: 0 0 14px; font-size: 20px; }
 
-        .card { background-color: white; color: #333; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        h2 { color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 0; }
+        .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
+        .stat { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 18px; backdrop-filter: blur(14px); }
+        .stat .n { font-size: 32px; font-weight: 900; }
+        .stat .l { color: var(--muted); font-size: 13px; }
 
-        input, select, textarea { width: 100%; padding: 10px; margin: 5px 0 15px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
-        .row { display: flex; gap: 10px; } .col { flex: 1; }
+        .layout { display: grid; grid-template-columns: 1.6fr 1fr; gap: 20px; align-items: start; }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 22px; margin-bottom: 20px; backdrop-filter: blur(14px); }
 
-        button { padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        button:hover { opacity: 0.9; }
-        .btn-green { background-color: #27ae60; color: white; }
-        .btn-red { background-color: #c0392b; color: white; }
+        label { font-size: 13px; color: var(--muted); }
+        input, select, textarea {
+            width: 100%; padding: 11px 13px; margin: 5px 0 14px; color: var(--text); font-size: 14px; font-family: inherit;
+            background: rgba(255,255,255,.08); border: 1px solid var(--border); border-radius: 12px; outline: none;
+        }
+        select option { color: #111; }
+        input:focus, select:focus, textarea:focus { border-color: var(--accent2); box-shadow: 0 0 0 3px rgba(0,212,255,.18); }
+        .row { display: flex; gap: 12px; } .col { flex: 1; }
 
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
-        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
-        th { background-color: #f8f9fa; color: #7f8c8d; }
-        tr:hover { background-color: #f1f1f1; }
+        button { padding: 10px 16px; border: none; border-radius: 12px; cursor: pointer; font-weight: 700; color: #fff; transition: .15s; font-family: inherit; }
+        button:hover { transform: translateY(-1px); opacity: .92; }
+        .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); }
+        .btn-green { background: linear-gradient(135deg, #1fbf83, #2ee59d); color: #04301f; }
+        .btn-red { background: rgba(255,92,122,.2); color: var(--bad); border: 1px solid rgba(255,92,122,.5); padding: 6px 12px; }
+        .btn-ghost { background: rgba(255,255,255,.1); border: 1px solid var(--border); }
 
-        .cat-badge { background-color: #3498db; color: white; padding: 3px 8px; border-radius: 10px; font-size: 11px; }
-        .diff-1 { color: #27ae60; font-weight: bold; }
-        .diff-2 { color: #f39c12; font-weight: bold; }
-        .diff-3 { color: #c0392b; font-weight: bold; }
+        .table-wrap { max-height: 520px; overflow: auto; border-radius: 12px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { position: sticky; top: 0; background: #241f4d; color: var(--muted); text-align: left; padding: 10px; z-index: 1; }
+        td { padding: 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        tr:hover td { background: rgba(255,255,255,.04); }
 
-        /* Resim Önizleme */
-        .img-preview { max-width: 50px; max-height: 50px; border-radius: 5px; vertical-align: middle; }
+        .cat-badge { background: rgba(124,92,255,.3); padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+        .d1 { color: var(--good); font-weight: 800; } .d2 { color: var(--warn); font-weight: 800; } .d3 { color: var(--bad); font-weight: 800; }
+        .img-preview { width: 44px; height: 44px; object-fit: cover; border-radius: 8px; }
+        .answer { color: var(--good); font-weight: 800; }
+        .tools { display: flex; gap: 10px; margin-bottom: 12px; }
+        .tools input, .tools select { margin: 0; }
+        .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(30px); opacity: 0; transition: .3s; background: #1e1b3a; border: 1px solid var(--border); padding: 12px 20px; border-radius: 14px; font-weight: 700; }
+        .toast.show { opacity: 1; transform: translateX(-50%); } .toast.err { border-color: var(--bad); } .toast.ok { border-color: var(--good); }
+
+        @media (max-width: 960px) { .layout { grid-template-columns: 1fr; } .stats { grid-template-columns: repeat(2, 1fr); } }
     </style>
 </head>
 <body>
+<div class="wrap">
+    <header>
+        <h1 class="grad">🛠️ Yönetici Paneli</h1>
+        <button class="btn-ghost" onclick="adminLogout()">← Çıkış Yap</button>
+    </header>
 
-<div class="container" style="display:block; margin-bottom:10px;">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h1>🛠️ Yönetici Paneli</h1>
-        <button class="btn-red" onclick="window.location.href='/'">Çıkış Yap</button>
+    <div class="stats">
+        <div class="stat"><div class="n" id="st-questions">0</div><div class="l">Toplam Soru</div></div>
+        <div class="stat"><div class="n" id="st-categories">0</div><div class="l">Kategori</div></div>
+        <div class="stat"><div class="n" id="st-users">0</div><div class="l">Oyuncu</div></div>
+        <div class="stat"><div class="n" id="st-score">0</div><div class="l">Toplam Puan</div></div>
     </div>
-</div>
 
-<div class="container">
-
-    <div class="column">
-        <div class="card">
-            <h2>➕ Soru Ekle</h2>
-
-            <div class="row">
-                <div class="col">
-                    <label>Kategori:</label> <select id="categorySelect"></select>
+    <div class="layout">
+        <div>
+            <div class="card">
+                <h2>➕ Soru Ekle</h2>
+                <div class="row">
+                    <div class="col"><label>Kategori</label><select id="categorySelect"></select></div>
+                    <div class="col"><label>Zorluk</label>
+                        <select id="difficultySelect">
+                            <option value="1">🟢 Kolay (10 puan)</option>
+                            <option value="2">🟠 Orta (20 puan)</option>
+                            <option value="3">🔴 Zor (30 puan)</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="col">
-                    <label>Zorluk:</label>
-                    <select id="difficultySelect">
-                        <option value="1">🟢 Kolay (1)</option>
-                        <option value="2">🟠 Orta (2)</option>
-                        <option value="3">🔴 Zor (3)</option>
-                    </select>
+                <label>Soru metni</label>
+                <textarea id="qText" rows="2" placeholder="Soru metni..."></textarea>
+                <label>Resim linki (opsiyonel)</label>
+                <input type="text" id="imgUrl" placeholder="https://...">
+                <div class="row">
+                    <div class="col"><input type="text" id="optA" placeholder="A şıkkı"></div>
+                    <div class="col"><input type="text" id="optB" placeholder="B şıkkı"></div>
                 </div>
-            </div>
-
-            <textarea id="qText" rows="2" placeholder="Soru metni..."></textarea>
-
-            <input type="text" id="imgUrl" placeholder="🖼️ Resim Linki (Opsiyonel - Boş bırakılabilir)">
-
-            <div class="row">
-                <div class="col"><input type="text" id="optA" placeholder="A Şıkkı"></div>
-                <div class="col"><input type="text" id="optB" placeholder="B Şıkkı"></div>
-            </div>
-            <div class="row">
-                <div class="col"><input type="text" id="optC" placeholder="C Şıkkı"></div>
-                <div class="col"><input type="text" id="optD" placeholder="D Şıkkı"></div>
-            </div>
-
-            <div class="row">
-                <div class="col">
-                    <select id="correctOpt">
-                        <option value="A">Doğru: A</option>
-                        <option value="B">Doğru: B</option>
-                        <option value="C">Doğru: C</option>
-                        <option value="D">Doğru: D</option>
-                    </select>
+                <div class="row">
+                    <div class="col"><input type="text" id="optC" placeholder="C şıkkı"></div>
+                    <div class="col"><input type="text" id="optD" placeholder="D şıkkı"></div>
                 </div>
-                <div class="col">
-                    <button class="btn-green" style="width:100%" onclick="addQuestion()">Kaydet</button>
+                <div class="row" style="align-items:flex-end">
+                    <div class="col">
+                        <label>Doğru cevap</label>
+                        <select id="correctOpt">
+                            <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option>
+                        </select>
+                    </div>
+                    <div class="col"><button class="btn-green" style="width:100%; margin-bottom:14px" onclick="addQuestion()">Kaydet</button></div>
                 </div>
             </div>
-        </div>
 
-        <div class="card">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <div class="card">
                 <h2>📋 Sorular</h2>
-                <select id="filterCategory" onchange="loadQuestions()" style="width: 180px; margin:0;">
-                    <option value="all" selected>Tüm Kategoriler</option>
-                </select>
-            </div>
-            <div style="max-height: 500px; overflow-y: auto;">
-                <table>
-                    <thead>
-                    <tr>
-                        <th width="5%">ID</th>
-                        <th width="10%">Kat.</th>
-                        <th width="10%">Görsel</th>
-                        <th width="40%">Soru</th>
-                        <th width="10%">Zorluk</th>
-                        <th width="25%">İşlem</th>
-                    </tr>
-                    </thead>
-                    <tbody id="questionsTable"></tbody>
-                </table>
+                <div class="tools">
+                    <input type="text" id="search" placeholder="🔎 Soru ara..." oninput="renderQuestions()">
+                    <select id="filterCategory" onchange="loadQuestions()" style="width:200px">
+                        <option value="all" selected>Tüm Kategoriler</option>
+                    </select>
+                    <select id="filterDiff" onchange="renderQuestions()" style="width:130px">
+                        <option value="0">Tüm zorluklar</option>
+                        <option value="1">Kolay</option><option value="2">Orta</option><option value="3">Zor</option>
+                    </select>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>ID</th><th>Kat.</th><th>Görsel</th><th>Soru</th><th>Cevap</th><th>Zorluk</th><th></th></tr></thead>
+                        <tbody id="questionsTable"></tbody>
+                    </table>
+                </div>
+                <p style="color:var(--muted); font-size:12px; margin:10px 0 0"><span id="shown">0</span> soru gösteriliyor</p>
             </div>
         </div>
-    </div>
 
-    <div class="column" style="max-width: 400px;">
-        <div class="card">
-            <h2>👥 Kullanıcılar</h2>
-            <div style="max-height: 700px; overflow-y: auto;">
-                <table>
-                    <thead>
-                    <tr>
-                        <th>Kullanıcı</th>
-                        <th>Puan</th>
-                        <th>İşlem</th>
-                    </tr>
-                    </thead>
-                    <tbody id="usersTable"></tbody>
-                </table>
+        <div>
+            <div class="card">
+                <h2>🗂️ Yeni Kategori</h2>
+                <input type="text" id="catName" placeholder="Kategori adı">
+                <input type="text" id="catDesc" placeholder="Açıklama">
+                <button class="btn-primary" style="width:100%" onclick="addCategory()">Kategori Ekle</button>
+            </div>
+            <div class="card">
+                <h2>👥 Kullanıcılar</h2>
+                <div class="table-wrap" style="max-height:520px">
+                    <table>
+                        <thead><tr><th>Kullanıcı</th><th>Puan</th><th></th></tr></thead>
+                        <tbody id="usersTable"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 </div>
+<div id="toast" class="toast"></div>
 
 <script>
-    window.onload = function() { loadCategories(); loadUsers(); };
+    // Oturum yoksa ya da yönetici değilse giriş sayfasına dön
+    const _fetch = window.fetch.bind(window);
+    window.fetch = (...a) => _fetch(...a).then(r => { if (r.status === 401 || r.status === 403) location.href = '/'; return r; });
+
+    function adminLogout() { _fetch('/api/users/logout', { method: 'POST' }).finally(() => location.href = '/'); }
+
+    let allQuestions = [];
+    const $ = id => document.getElementById(id);
+    const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+    function toast(msg, type = 'ok') {
+        const t = $('toast'); t.textContent = msg; t.className = 'toast show ' + type;
+        clearTimeout(toast.h); toast.h = setTimeout(() => t.className = 'toast', 2400);
+    }
+
+    window.onload = () => { loadCategories(); loadUsers(); };
 
     function loadCategories() {
-        fetch('/api/categories').then(res => res.json()).then(cats => {
-            const s1 = document.getElementById('categorySelect');
-            const s2 = document.getElementById('filterCategory');
-            s1.innerHTML = '';
-
+        fetch('/api/categories').then(r => r.json()).then(cats => {
+            const s1 = $('categorySelect'), s2 = $('filterCategory');
+            const keep = s2.value;
+            s1.innerHTML = ''; s2.innerHTML = '<option value="all">Tüm Kategoriler</option>';
             cats.forEach(c => {
-                const o1 = document.createElement('option'); o1.value = c.id; o1.innerText = c.name; s1.appendChild(o1);
-                const o2 = document.createElement('option'); o2.value = c.id; o2.innerText = c.name; s2.appendChild(o2);
+                s1.add(new Option(c.name, c.id)); s2.add(new Option(c.name, c.id));
             });
+            s2.value = [...s2.options].some(o => o.value === keep) ? keep : 'all';
+            $('st-categories').textContent = cats.length;
             loadQuestions();
         });
     }
 
-    function loadQuestions() {
-        const filterVal = document.getElementById('filterCategory').value;
-        let url = filterVal !== 'all' ? '/api/questions/category/' + filterVal : '/api/questions';
-
-        fetch(url).then(res => res.json()).then(qs => {
-            const tbody = document.getElementById('questionsTable');
-            tbody.innerHTML = '';
-            qs.sort((a,b) => b.id - a.id);
-
-            qs.forEach(q => {
-                const catName = q.category ? q.category.name : '-';
-                let diffText = "Kolay", diffClass = "diff-1";
-                if(q.difficulty === 2) { diffText = "Orta"; diffClass = "diff-2"; }
-                if(q.difficulty === 3) { diffText = "Zor"; diffClass = "diff-3"; }
-
-                // Görsel varsa küçük önizleme göster
-                let imgHtml = q.imageUrl ? `<img src="${q.imageUrl}" class="img-preview" alt="img">` : '<span style="color:#ccc">-</span>';
-
-                tbody.innerHTML += `<tr>
-                    <td>${q.id}</td>
-                    <td><span class="cat-badge">${catName}</span></td>
-                    <td>${imgHtml}</td>
-                    <td>${q.questionText}</td>
-                    <td><span class="${diffClass}">${diffText}</span></td>
-                    <td><button class="btn-red" onclick="deleteQuestion(${q.id})">Sil</button></td>
-                </tr>`;
-            });
+    function addCategory() {
+        const name = $('catName').value.trim();
+        if (!name) { toast('Kategori adı gerekli', 'err'); return; }
+        fetch('/api/categories', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, description: $('catDesc').value.trim() })
+        }).then(r => {
+            if (!r.ok) { toast('Eklenemedi', 'err'); return; }
+            $('catName').value = ''; $('catDesc').value = ''; toast('Kategori eklendi'); loadCategories();
         });
     }
 
+    function loadQuestions() {
+        const f = $('filterCategory').value;
+        fetch(f !== 'all' ? '/api/questions/category/' + f : '/api/questions').then(r => r.json()).then(qs => {
+            allQuestions = qs.sort((a, b) => b.id - a.id); renderQuestions();
+        });
+        if (f === 'all') fetch('/api/questions').then(r => r.json()).then(qs => $('st-questions').textContent = qs.length);
+    }
+
+    function renderQuestions() {
+        const term = $('search').value.trim().toLowerCase(), diff = +$('filterDiff').value;
+        const rows = allQuestions.filter(q => (!diff || q.difficulty === diff) && (!term || (q.questionText || '').toLowerCase().includes(term)));
+        const names = ['', 'Kolay', 'Orta', 'Zor'];
+        $('questionsTable').innerHTML = rows.map(q => `<tr>
+            <td>${q.id}</td>
+            <td><span class="cat-badge">${esc(q.category ? q.category.name : '-')}</span></td>
+            <td>${q.imageUrl ? `<img src="${esc(q.imageUrl)}" class="img-preview" alt="">` : '<span style="color:#666">-</span>'}</td>
+            <td>${esc(q.questionText)}</td>
+            <td class="answer">${esc(q.correctAnswer)}</td>
+            <td><span class="d${q.difficulty}">${names[q.difficulty] || '-'}</span></td>
+            <td><button class="btn-red" onclick="deleteQuestion(${q.id})">Sil</button></td>
+        </tr>`).join('');
+        $('shown').textContent = rows.length;
+    }
+
     function addQuestion() {
-        const catId = document.getElementById('categorySelect').value;
-        const diff = document.getElementById('difficultySelect').value;
-        const text = document.getElementById('qText').value;
-        const img = document.getElementById('imgUrl').value; // YENİ
-        const a = document.getElementById('optA').value;
-        const b = document.getElementById('optB').value;
-        const c = document.getElementById('optC').value;
-        const d = document.getElementById('optD').value;
-        const correct = document.getElementById('correctOpt').value;
-
-        if(!text || !a) { alert("Eksik bilgi!"); return; }
-
+        const v = id => $(id).value.trim();
+        if (!v('qText') || !v('optA') || !v('optB') || !v('optC') || !v('optD')) { toast('Soru ve dört şık da gerekli!', 'err'); return; }
         fetch('/api/questions', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                questionText: text,
-                imageUrl: img, // YENİ: URL'yi gönderiyoruz
-                optionA: a, optionB: b, optionC: c, optionD: d,
-                correctAnswer: correct,
-                difficulty: parseInt(diff),
-                category: { id: catId }
+                questionText: v('qText'), imageUrl: v('imgUrl'),
+                optionA: v('optA'), optionB: v('optB'), optionC: v('optC'), optionD: v('optD'),
+                correctAnswer: $('correctOpt').value, difficulty: parseInt($('difficultySelect').value),
+                category: { id: $('categorySelect').value }
             })
-        }).then(res => {
-            if(res.ok) {
-                alert("Eklendi!");
-                document.getElementById('qText').value = "";
-                document.getElementById('imgUrl').value = ""; // Kutuyu temizle
-                document.getElementById('optA').value = "";
-                document.getElementById('optB').value = "";
-                document.getElementById('optC').value = "";
-                document.getElementById('optD').value = "";
-                loadQuestions();
-            }
+        }).then(r => {
+            if (!r.ok) { toast('Kaydedilemedi', 'err'); return; }
+            toast('Soru eklendi ✔');
+            ['qText', 'imgUrl', 'optA', 'optB', 'optC', 'optD'].forEach(id => $(id).value = '');
+            loadQuestions();
         });
     }
 
     function deleteQuestion(id) {
-        if(confirm("Silmek istiyor musun?")) fetch('/api/questions/' + id, { method: 'DELETE' }).then(() => loadQuestions());
+        if (confirm('Bu soru silinsin mi?')) fetch('/api/questions/' + id, { method: 'DELETE' }).then(() => { toast('Soru silindi'); loadQuestions(); });
     }
 
     function loadUsers() {
-        fetch('/api/users').then(res => res.json()).then(users => {
-            const tbody = document.getElementById('usersTable');
-            tbody.innerHTML = '';
-            users.forEach(u => {
-                let btn = u.username === 'admin' ? '' : `<button class="btn-red" onclick="deleteUser(${u.id})">Sil</button>`;
-                tbody.innerHTML += `<tr><td>${u.username} <br><small style="color:#aaa">${u.role || 'USER'}</small></td><td>${u.totalScore}</td><td>${btn}</td></tr>`;
-            });
+        fetch('/api/users').then(r => r.json()).then(users => {
+            $('st-users').textContent = users.length;
+            $('st-score').textContent = users.reduce((s, u) => s + (u.totalScore || 0), 0);
+            $('usersTable').innerHTML = users.map(u => `<tr>
+                <td>${esc(u.username)}<br><small style="color:var(--muted)">${esc(u.role || 'USER')}</small></td>
+                <td>${u.totalScore}</td>
+                <td>${u.username === 'admin' ? '' : `<button class="btn-red" onclick="deleteUser(${u.id})">Sil</button>`}</td>
+            </tr>`).join('');
         });
     }
-    function deleteUser(id) { if(confirm("Kullanıcı silinsin mi?")) fetch('/api/users/'+id,{method:'DELETE'}).then(()=>loadUsers()); }
+
+    function deleteUser(id) {
+        if (confirm('Kullanıcı silinsin mi?')) fetch('/api/users/' + id, { method: 'DELETE' }).then(() => { toast('Kullanıcı silindi'); loadUsers(); });
+    }
 </script>
 </body>
 </html>

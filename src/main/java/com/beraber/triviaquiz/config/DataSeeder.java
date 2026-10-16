@@ -6,32 +6,44 @@ import com.beraber.triviaquiz.entity.User;
 import com.beraber.triviaquiz.repository.CategoryRepository;
 import com.beraber.triviaquiz.repository.QuestionRepository;
 import com.beraber.triviaquiz.repository.UserRepository;
+import com.beraber.triviaquiz.service.UserService;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import java.security.SecureRandom;
 import org.springframework.stereotype.Component;
 
 @Component
+@org.springframework.core.annotation.Order(1)
 public class DataSeeder implements CommandLineRunner {
 
     private final CategoryRepository categoryRepository;
     private final QuestionRepository questionRepository;
     private final UserRepository userRepository;
 
-    public DataSeeder(CategoryRepository categoryRepository, QuestionRepository questionRepository, UserRepository userRepository) {
+    private final PasswordEncoder passwordEncoder;
+
+    public DataSeeder(CategoryRepository categoryRepository, QuestionRepository questionRepository,
+                      UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.categoryRepository = categoryRepository;
         this.questionRepository = questionRepository;
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     public void run(String... args) throws Exception {
 
-        // ADMIN KULLANICISI (Yoksa oluştur)
-        if (userRepository.findByUsername("admin") == null) {
-            User admin = new User();
+        // ADMIN KULLANICISI: yoksa oluştur; eski zayıf şifre ("123") hâlâ duruyorsa değiştir
+        User admin = userRepository.findByUsername("admin");
+        if (admin == null) {
+            admin = new User();
             admin.setUsername("admin");
-            admin.setPassword("123");
             admin.setRole("ADMIN");
             admin.setTotalScore(0);
+            admin.setPassword(passwordEncoder.encode(newAdminPassword()));
+            userRepository.save(admin);
+        } else if (usesWeakPassword(admin)) {
+            admin.setPassword(passwordEncoder.encode(newAdminPassword()));
             userRepository.save(admin);
         }
 
@@ -94,6 +106,30 @@ public class DataSeeder implements CommandLineRunner {
 
             System.out.println("--- TÜM KATEGORİLER VE SORULAR YÜKLENDİ ---");
         }
+    }
+
+    private boolean usesWeakPassword(User admin) {
+        String stored = admin.getPassword();
+        if (stored == null) return true;
+        return UserService.isHashed(stored) ? passwordEncoder.matches("123", stored) : stored.equals("123");
+    }
+
+    /** ADMIN_PASSWORD ortam değişkeni (en az 8 karakter) varsa onu, yoksa rastgele bir şifre üretip konsola yazar. */
+    private String newAdminPassword() {
+        String env = System.getenv("ADMIN_PASSWORD");
+        if (env != null && env.length() >= 8) {
+            System.out.println("--- ADMIN şifresi ADMIN_PASSWORD ortam değişkeninden ayarlandı ---");
+            return env;
+        }
+        String alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+        SecureRandom random = new SecureRandom();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 16; i++) sb.append(alphabet.charAt(random.nextInt(alphabet.length())));
+        System.out.println("=====================================================");
+        System.out.println(" ADMIN için rastgele şifre üretildi: " + sb);
+        System.out.println(" Kullanıcı adı: admin  (bu şifreyi bir kenara not al!)");
+        System.out.println("=====================================================");
+        return sb.toString();
     }
 
     private Category createCategory(String name, String desc) {

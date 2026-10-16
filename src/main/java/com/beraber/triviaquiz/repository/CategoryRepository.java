@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 // <Category, Long> -> Hangi Entity ile çalışıyor ve ID tipi ne?
 public interface CategoryRepository extends JpaRepository<Category, Long> {
+    Category findByName(String name);
+
     // Şimdilik buraya ekstra bir şey yazmamıza gerek yok.
     // JpaRepository bizim için save, findAll, findById gibi metodları zaten içeriyor.
 }

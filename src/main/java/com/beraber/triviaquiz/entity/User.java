@@ -13,6 +13,7 @@ public class User {
     @Column(unique = true)
     private String username;
 
+    @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY)
     private String password;
 
     private Integer totalScore = 0;

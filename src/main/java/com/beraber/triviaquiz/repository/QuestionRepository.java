@@ -10,4 +10,6 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
     // "findBy" dedikten sonra değişken adını (CategoryId) yazarsan
     // arka planda "SELECT * FROM questions WHERE category_id = ?" sorgusunu otomatik yazar.
     List<Question> findByCategoryId(Long categoryId);
+
+    boolean existsByQuestionText(String questionText);
 }

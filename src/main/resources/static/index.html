@@ -2,213 +2,492 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Bilgi Yarışması</title>
   <style>
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-    .container { background-color: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); width: 450px; text-align: center; position: relative; max-height: 95vh; overflow-y: auto; }
+    :root {
+      --bg1: #0f0c29; --bg2: #302b63; --bg3: #24243e;
+      --card: rgba(255,255,255,.07); --card-border: rgba(255,255,255,.14);
+      --text: #f4f4ff; --muted: #a9a8c8;
+      --accent: #7c5cff; --accent2: #00d4ff;
+      --good: #2ee59d; --bad: #ff5c7a; --warn: #ffc857;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+      color: var(--text);
+      background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3));
+      background-size: 300% 300%;
+      animation: bgShift 18s ease infinite;
+      display: flex; justify-content: center; align-items: center;
+      min-height: 100vh; padding: 16px;
+    }
+    @keyframes bgShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
 
-    h1, h2, h3 { color: #2c3e50; margin-bottom: 20px; }
-    input[type="text"], input[type="password"] { width: 90%; padding: 10px; margin: 10px 0; border: 1px solid #bdc3c7; border-radius: 5px; font-size: 16px; }
+    .blob { position: fixed; border-radius: 50%; filter: blur(80px); opacity: .35; z-index: 0; pointer-events: none; }
+    .blob.b1 { width: 340px; height: 340px; background: var(--accent); top: -80px; left: -80px; }
+    .blob.b2 { width: 380px; height: 380px; background: var(--accent2); bottom: -120px; right: -100px; }
 
-    .btn { display: block; width: 100%; padding: 12px; margin: 10px 0; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; transition: 0.3s; color: white; font-weight: bold; }
-    .btn-primary { background-color: #3498db; } .btn-primary:hover { background-color: #2980b9; }
-    .btn-secondary { background-color: #95a5a6; } .btn-secondary:hover { background-color: #7f8c8d; }
-    .btn-warning { background-color: #f1c40f; color: #2c3e50; }
+    .container {
+      position: relative; z-index: 1; width: 100%; max-width: 520px;
+      background: var(--card); border: 1px solid var(--card-border);
+      backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+      border-radius: 24px; padding: 28px; box-shadow: 0 20px 60px rgba(0,0,0,.45);
+      max-height: 96vh; overflow-y: auto;
+    }
+    h1, h2, h3 { margin: 0 0 14px; font-weight: 800; letter-spacing: -.3px; }
+    h1 { font-size: 34px; } h2 { font-size: 26px; } h3 { font-size: 20px; }
+    .muted { color: var(--muted); }
+    .center { text-align: center; }
+    .grad-text { background: linear-gradient(90deg, var(--accent2), var(--accent), #ff6ec7); -webkit-background-clip: text; background-clip: text; color: transparent; }
 
-    /* Slider ve Ayarlar */
-    .difficulty-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; background: #f9f9f9; padding: 10px; border-radius: 8px; }
-    .range-slider { flex: 1; margin: 0 10px; }
+    input[type=text], input[type=password] {
+      width: 100%; padding: 14px 16px; margin: 6px 0; font-size: 16px; color: var(--text);
+      background: rgba(255,255,255,.08); border: 1px solid var(--card-border); border-radius: 14px; outline: none; transition: .2s;
+    }
+    input:focus { border-color: var(--accent2); box-shadow: 0 0 0 3px rgba(0,212,255,.2); }
+    input::placeholder { color: var(--muted); }
 
-    /* Seçenekler */
-    .btn-option { background-color: #ecf0f1; color: #2c3e50; text-align: left; padding-left: 20px; border: 2px solid transparent; width: 100%; margin-bottom: 8px; }
-    .btn-option:hover:not([disabled]) { background-color: #bdc3c7; }
-    .correct { background-color: #2ecc71 !important; color: white !important; }
-    .wrong { background-color: #e74c3c !important; color: white !important; }
+    .btn {
+      display: block; width: 100%; padding: 14px; margin: 10px 0; border: none; border-radius: 14px;
+      font-size: 16px; font-weight: 700; color: #fff; cursor: pointer; transition: transform .15s, box-shadow .15s, opacity .15s;
+    }
+    .btn:hover:not(:disabled) { transform: translateY(-2px); }
+    .btn:active:not(:disabled) { transform: translateY(0); }
+    .btn:disabled { opacity: .45; cursor: not-allowed; }
+    .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); box-shadow: 0 8px 24px rgba(124,92,255,.4); }
+    .btn-ghost { background: rgba(255,255,255,.1); border: 1px solid var(--card-border); }
+    .btn-gold { background: linear-gradient(135deg, #ffb347, #ffcc33); color: #3b2a00; }
+    .btn-sm { display: inline-block; width: auto; padding: 8px 14px; margin: 0; font-size: 14px; }
 
     .screen { display: none; }
-    .active-screen { display: block; animation: fadeIn 0.5s; }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .active-screen { display: block; animation: pop .45s cubic-bezier(.2,.9,.3,1.2); }
+    @keyframes pop { from { opacity: 0; transform: translateY(14px) scale(.98); } to { opacity: 1; transform: none; } }
 
-    /* --- YENİ EKLENEN: SANAT ÇERÇEVESİ --- */
-    .art-frame {
-      display: none; /* Varsayılan gizli */
-      margin: 10px auto;
-      padding: 10px;
-      background-color: #fff;
-      border: 8px solid #5a3e36; /* Ahşap çerçeve rengi */
-      box-shadow: 0 10px 20px rgba(0,0,0,0.3), inset 0 0 20px rgba(0,0,0,0.2); /* Derinlik efekti */
-      max-width: 250px;
+    .msg { min-height: 20px; font-size: 14px; color: var(--bad); margin: 8px 0 0; }
+
+    /* Menü */
+    .userbar { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+    .avatar { width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; font-size: 22px; font-weight: 800; background: linear-gradient(135deg, var(--accent), #ff6ec7); }
+    .userbar .info { flex: 1; }
+    .userbar .name { font-weight: 800; font-size: 18px; }
+    .score-pill { background: rgba(255,200,87,.15); border: 1px solid rgba(255,200,87,.4); color: var(--warn); padding: 6px 12px; border-radius: 999px; font-weight: 800; }
+    .cat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 14px 0; }
+    .cat-card {
+      background: rgba(255,255,255,.08); border: 1px solid var(--card-border); border-radius: 18px; padding: 18px 12px; text-align: center;
+      cursor: pointer; color: var(--text); transition: .2s; font-family: inherit;
     }
-    .art-image {
-      width: 100%;
-      display: block;
-      border: 1px solid #ccc;
+    .cat-card:hover { transform: translateY(-4px) scale(1.02); background: rgba(124,92,255,.25); border-color: var(--accent); }
+    .cat-card .emoji { font-size: 38px; display: block; margin-bottom: 6px; }
+    .cat-card .cname { font-weight: 800; font-size: 16px; }
+    .cat-card .cdesc { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+    /* Ayarlar */
+    .difficulty-row { display: grid; grid-template-columns: 76px 1fr 30px; align-items: center; gap: 10px; margin-bottom: 10px; background: rgba(255,255,255,.06); padding: 12px 14px; border-radius: 14px; }
+    .difficulty-row .lbl { font-weight: 700; }
+    .difficulty-row .val { font-weight: 800; text-align: right; }
+    input[type=range] { width: 100%; accent-color: var(--accent2); }
+    #easyRange { accent-color: var(--good); } #mediumRange { accent-color: var(--warn); } #hardRange { accent-color: var(--bad); }
+    .presets { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+    .chip { background: rgba(255,255,255,.1); border: 1px solid var(--card-border); color: var(--text); padding: 7px 12px; border-radius: 999px; cursor: pointer; font-size: 13px; font-weight: 600; font-family: inherit; }
+    .chip:hover { background: rgba(124,92,255,.3); }
+
+    /* Oyun */
+    .hud { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+    .hud .stat { background: rgba(255,255,255,.08); border-radius: 12px; padding: 6px 12px; font-weight: 800; font-size: 14px; }
+    .progress { height: 8px; border-radius: 99px; background: rgba(255,255,255,.12); overflow: hidden; margin-bottom: 16px; }
+    .progress > div { height: 100%; width: 0; background: linear-gradient(90deg, var(--accent2), var(--accent)); border-radius: 99px; transition: width .4s; }
+    .timer { position: relative; width: 56px; height: 56px; }
+    .timer svg { transform: rotate(-90deg); }
+    .timer circle { fill: none; stroke-width: 6; }
+    .timer .bg { stroke: rgba(255,255,255,.12); }
+    .timer .fg { stroke: var(--accent2); stroke-linecap: round; stroke-dasharray: 150.8; stroke-dashoffset: 0; transition: stroke-dashoffset 1s linear, stroke .3s; }
+    .timer.low .fg { stroke: var(--bad); }
+    .timer .num { position: absolute; inset: 0; display: grid; place-items: center; font-weight: 800; }
+    .timer.low .num { color: var(--bad); animation: pulse .6s infinite; }
+    @keyframes pulse { 50% { transform: scale(1.2); } }
+
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 800; margin-bottom: 10px; }
+    .d1 { background: rgba(46,229,157,.18); color: var(--good); }
+    .d2 { background: rgba(255,200,87,.18); color: var(--warn); }
+    .d3 { background: rgba(255,92,122,.18); color: var(--bad); }
+
+    #question-text { min-height: 56px; font-size: 21px; line-height: 1.35; }
+    .art-frame { display: none; margin: 8px auto 14px; padding: 8px; background: #fff; border: 8px solid #5a3e36; box-shadow: 0 10px 24px rgba(0,0,0,.5), inset 0 0 16px rgba(0,0,0,.25); max-width: 260px; }
+    .art-image { width: 100%; display: block; }
+
+    .btn-option {
+      display: flex; align-items: center; gap: 12px; text-align: left; margin: 0 0 10px; padding: 13px 14px;
+      background: rgba(255,255,255,.08); border: 2px solid var(--card-border); color: var(--text); font-weight: 600;
     }
+    .btn-option .key { flex: none; width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; background: rgba(255,255,255,.14); font-weight: 800; }
+    .btn-option:hover:not(:disabled) { border-color: var(--accent2); background: rgba(0,212,255,.12); }
+    .btn-option.correct { background: rgba(46,229,157,.25) !important; border-color: var(--good) !important; animation: pop .35s; }
+    .btn-option.wrong { background: rgba(255,92,122,.25) !important; border-color: var(--bad) !important; animation: shake .4s; }
+    .btn-option:disabled { opacity: 1; cursor: default; }
+    .btn-option.dim { opacity: .45; }
+    .btn-option.hidden { visibility: hidden; }
+    @keyframes shake { 20%,60% { transform: translateX(-6px); } 40%,80% { transform: translateX(6px); } }
+    #feedback-msg { font-weight: 800; min-height: 24px; margin: 6px 0 0; text-align: center; }
+
+    /* Sonuç */
+    .trophy { font-size: 72px; animation: bounce 1.2s infinite; }
+    @keyframes bounce { 50% { transform: translateY(-10px); } }
+    .final-score { font-size: 56px; font-weight: 900; }
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 16px 0; }
+    .stats div { background: rgba(255,255,255,.08); border-radius: 14px; padding: 12px 6px; }
+    .stats b { display: block; font-size: 22px; }
+    .stats span { font-size: 12px; color: var(--muted); }
+
+    /* Liderlik */
+    .podium { display: flex; justify-content: center; align-items: flex-end; gap: 10px; margin: 10px 0 18px; }
+    .podium .p { flex: 1; text-align: center; border-radius: 14px 14px 0 0; padding: 10px 4px; background: rgba(255,255,255,.1); }
+    .podium .p1 { height: 130px; background: linear-gradient(180deg, rgba(255,200,87,.5), rgba(255,200,87,.12)); }
+    .podium .p2 { height: 104px; background: linear-gradient(180deg, rgba(200,210,230,.4), rgba(200,210,230,.1)); }
+    .podium .p3 { height: 88px; background: linear-gradient(180deg, rgba(205,127,50,.45), rgba(205,127,50,.1)); }
+    .podium .medal { font-size: 28px; }
+    .podium .pn { font-weight: 800; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .lb-row { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 12px; background: rgba(255,255,255,.06); margin-bottom: 8px; }
+    .lb-row.me { background: rgba(124,92,255,.3); border: 1px solid var(--accent); }
+    .lb-row .rank { width: 26px; font-weight: 800; color: var(--muted); }
+    .lb-row .n { flex: 1; font-weight: 700; }
+    .lb-row .s { font-weight: 800; color: var(--warn); }
+
+    #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
+    .toast { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%) translateY(30px); background: #1e1b3a; border: 1px solid var(--card-border); padding: 12px 20px; border-radius: 14px; opacity: 0; transition: .3s; z-index: 10; font-weight: 700; }
+    .toast.show { opacity: 1; transform: translateX(-50%); }
+    .toast.err { border-color: var(--bad); } .toast.ok { border-color: var(--good); }
+    @media (max-width: 480px) { .container { padding: 20px; } h1 { font-size: 28px; } }
   </style>
 </head>
 <body>
+<div class="blob b1"></div><div class="blob b2"></div>
+<canvas id="confetti"></canvas>
+<div id="toast" class="toast"></div>
 
 <div class="container">
 
-  <div id="login-screen" class="screen active-screen">
-    <h1>Bilgi Yarışması</h1>
-    <input type="text" id="username" placeholder="Kullanıcı Adı">
-    <input type="password" id="password" placeholder="Şifre">
+  <!-- GİRİŞ -->
+  <div id="login-screen" class="screen active-screen center">
+    <div style="font-size:64px">🧠</div>
+    <h1 class="grad-text">Bilgi Yarışması</h1>
+    <p class="muted" style="margin-top:-6px">Kategorini seç, zorluğunu ayarla, bilgini konuştur!</p>
+    <input type="text" id="username" placeholder="Kullanıcı adı" autocomplete="username">
+    <input type="password" id="password" placeholder="Şifre (en az 6 karakter)" autocomplete="current-password">
     <button class="btn btn-primary" onclick="login()">Giriş Yap</button>
-    <button class="btn btn-secondary" onclick="register()">Kayıt Ol</button>
-    <p id="login-msg" style="color:red;"></p>
+    <button class="btn btn-ghost" onclick="register()">Kayıt Ol</button>
+    <p id="login-msg" class="msg"></p>
   </div>
 
+  <!-- KATEGORİ -->
   <div id="category-screen" class="screen">
-    <h3>Hoşgeldin, <span id="display-username" style="color:#3498db;"></span>!</h3>
-    <p>Puanın: <span id="menu-score" style="font-weight:bold;">0</span></p>
-    <button class="btn btn-warning" onclick="showLeaderboard()">🏆 Liderlik Tablosu</button>
-    <hr>
-    <p>Kategori Seç:</p>
-    <div id="category-list"></div>
-    <button class="btn btn-secondary" onclick="logout()" style="margin-top:20px;">Çıkış</button>
+    <div class="userbar">
+      <div class="avatar" id="avatar">?</div>
+      <div class="info"><div class="muted" style="font-size:13px">Hoş geldin</div><div class="name" id="display-username"></div></div>
+      <div class="score-pill">⭐ <span id="menu-score">0</span></div>
+    </div>
+    <button class="btn btn-gold" onclick="showLeaderboard()">🏆 Liderlik Tablosu</button>
+    <h3 style="margin-top:18px">Bir kategori seç</h3>
+    <div id="category-list" class="cat-grid"></div>
+    <button class="btn btn-ghost" onclick="logout()">Çıkış</button>
   </div>
 
+  <!-- AYARLAR -->
   <div id="settings-screen" class="screen">
-    <h2>Oyun Ayarları</h2>
-    <div class="difficulty-row"><span>Kolay</span><input type="range" min="0" max="10" value="3" class="range-slider" id="easyRange" oninput="updateTotal()"><span id="easyCount">3</span></div>
-    <div class="difficulty-row"><span>Orta</span><input type="range" min="0" max="10" value="4" class="range-slider" id="mediumRange" oninput="updateTotal()"><span id="mediumCount">4</span></div>
-    <div class="difficulty-row"><span>Zor</span><input type="range" min="0" max="10" value="3" class="range-slider" id="hardRange" oninput="updateTotal()"><span id="hardCount">3</span></div>
-    <p>Toplam: <span id="totalQuestions" style="font-weight:bold;">10</span>/10</p>
-    <p id="settings-msg" style="color:red; font-size:12px;"></p>
-    <button class="btn btn-primary" onclick="startGame()">Başla</button>
-    <button class="btn btn-secondary" onclick="showScreen('category-screen')">Geri</button>
+    <h2 id="settings-title">Oyun Ayarları</h2>
+    <p class="muted" style="margin-top:-8px">Kaç soru ve hangi zorlukta oynayacağını seç.</p>
+    <div class="presets">
+      <button class="chip" onclick="preset(3,4,3)">⚖️ Dengeli</button>
+      <button class="chip" onclick="preset(6,3,1)">😌 Rahat</button>
+      <button class="chip" onclick="preset(1,3,6)">🔥 Zorlu</button>
+      <button class="chip" onclick="preset(0,0,10)">💀 Uzman</button>
+    </div>
+    <div class="difficulty-row"><span class="lbl" style="color:var(--good)">Kolay</span><input type="range" min="0" max="10" value="3" id="easyRange" oninput="updateTotal()"><span class="val" id="easyCount">3</span></div>
+    <div class="difficulty-row"><span class="lbl" style="color:var(--warn)">Orta</span><input type="range" min="0" max="10" value="4" id="mediumRange" oninput="updateTotal()"><span class="val" id="mediumCount">4</span></div>
+    <div class="difficulty-row"><span class="lbl" style="color:var(--bad)">Zor</span><input type="range" min="0" max="10" value="3" id="hardRange" oninput="updateTotal()"><span class="val" id="hardCount">3</span></div>
+    <p class="center">Toplam: <b id="totalQuestions">10</b> soru</p>
+    <p id="settings-msg" class="msg center"></p>
+    <button class="btn btn-primary" id="start-btn" onclick="startGame()">🚀 Başla</button>
+    <button class="btn btn-ghost" onclick="showScreen('category-screen')">Geri</button>
   </div>
 
+  <!-- SORU -->
   <div id="question-screen" class="screen">
-    <div style="display:flex; justify-content:space-between; font-weight:bold;">
-      <span>Puan: <span id="score">0</span></span>
-      <span style="color:#e74c3c;">Süre: <span id="timer">25</span></span>
+    <div class="hud">
+      <div class="stat">⭐ <span id="score">0</span></div>
+      <div class="stat" id="streak-box">🔥 <span id="streak">0</span></div>
+      <div class="stat"><span id="q-counter">1/10</span></div>
+      <div class="timer" id="timer-box">
+        <svg width="56" height="56"><circle class="bg" cx="28" cy="28" r="24"/><circle class="fg" id="timer-ring" cx="28" cy="28" r="24"/></svg>
+        <div class="num" id="timer">25</div>
+      </div>
     </div>
-    <div style="text-align:right;"><button id="btn-joker" class="btn btn-warning" style="width:auto; padding:5px 10px;" onclick="useJoker()">🃏 %50</button></div>
-
-    <div id="frame-container" class="art-frame">
-      <img id="question-image" class="art-image" src="" alt="Soru Görseli">
+    <div class="progress"><div id="progress-bar"></div></div>
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <span class="badge" id="diff-badge"></span>
+      <button id="btn-joker" class="btn btn-gold btn-sm" onclick="useJoker()">🃏 %50 Joker</button>
     </div>
-
-    <h3 id="question-text" style="min-height:40px; margin-top:10px;">...</h3>
+    <div id="frame-container" class="art-frame"><img id="question-image" class="art-image" src="" alt="Soru Görseli"></div>
+    <h3 id="question-text">...</h3>
     <div id="options-list"></div>
-    <p id="feedback-msg" style="font-weight:bold; height:20px;"></p>
+    <p id="feedback-msg"></p>
   </div>
 
-  <div id="result-screen" class="screen">
-    <h1>Oyun Bitti!</h1>
-    <div style="font-size:50px;">🏆</div>
-    <p>Puanın: <span id="final-score" style="font-weight:bold; font-size:24px;">0</span></p>
-    <button class="btn btn-primary" onclick="showScreen('category-screen')">Ana Menü</button>
+  <!-- SONUÇ -->
+  <div id="result-screen" class="screen center">
+    <div class="trophy" id="result-emoji">🏆</div>
+    <h2 id="result-title">Oyun Bitti!</h2>
+    <div class="final-score grad-text" id="final-score">0</div>
+    <div class="muted">puan</div>
+    <div class="stats">
+      <div><b id="res-correct">0</b><span>Doğru</span></div>
+      <div><b id="res-wrong">0</b><span>Yanlış</span></div>
+      <div><b id="res-best">0</b><span>En uzun seri</span></div>
+    </div>
+    <button class="btn btn-primary" onclick="prepareGame(selectedCat, selectedCatName)">🔁 Tekrar Oyna</button>
+    <button class="btn btn-ghost" onclick="showScreen('category-screen')">Ana Menü</button>
   </div>
 
+  <!-- LİDERLİK -->
   <div id="leaderboard-screen" class="screen">
-    <h2>🏆 En İyiler</h2>
-    <table style="width:100%; text-align:left;"><tbody id="leaderboard-body"></tbody></table>
-    <button class="btn btn-primary" onclick="showScreen('category-screen')" style="margin-top:20px;">Geri</button>
+    <h2 class="center">🏆 En İyiler</h2>
+    <div class="podium" id="podium"></div>
+    <div id="leaderboard-body"></div>
+    <button class="btn btn-primary" onclick="showScreen('category-screen')" style="margin-top:16px">Geri</button>
   </div>
 </div>
 
 <script>
-  let currentUser=null, selectedCat=null, currentQuestions=[], qIndex=0, score=0, timerInterval;
+  const QUESTION_TIME = 25;
+  const CAT_ICONS = { 'tarih':'🏛️', 'bilim':'🔬', 'spor':'⚽', 'sanat':'🎨', 'edebiyat':'📚', 'genel kültür':'🌍' };
+
+  let currentUser = null, selectedCat = null, selectedCatName = '', currentQuestions = [];
+  let qIndex = 0, score = 0, streak = 0, bestStreak = 0, correctCount = 0, wrongCount = 0;
+  let timerInterval = null, locked = false;
+
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const jsonPost = (url, body) => fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+
+  function toast(msg, type = 'ok') {
+    const t = $('toast'); t.textContent = msg; t.className = 'toast show ' + type;
+    clearTimeout(toast.h); toast.h = setTimeout(() => t.className = 'toast', 2600);
+  }
 
   function showScreen(id) {
-    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active-screen'));
-    document.getElementById(id).classList.add('active-screen');
-    if(id==='category-screen' && currentUser) document.getElementById('menu-score').innerText=currentUser.totalScore;
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
+    $(id).classList.add('active-screen');
+    if (id === 'category-screen' && currentUser) $('menu-score').textContent = currentUser.totalScore;
   }
 
-  function updateTotal() {
-    const e=parseInt(document.getElementById('easyRange').value), m=parseInt(document.getElementById('mediumRange').value), h=parseInt(document.getElementById('hardRange').value);
-    document.getElementById('easyCount').innerText=e; document.getElementById('mediumCount').innerText=m; document.getElementById('hardCount').innerText=h;
-    const total = e+m+h; document.getElementById('totalQuestions').innerText=total;
-    const btn = document.querySelector('#settings-screen .btn-primary');
-    if(total!==10) { btn.disabled=true; btn.style.opacity=0.5; document.getElementById('settings-msg').innerText="Toplam 10 olmalı!"; }
-    else { btn.disabled=false; btn.style.opacity=1; document.getElementById('settings-msg').innerText=""; }
-  }
-
-  function prepareGame(catId) { selectedCat=catId; showScreen('settings-screen'); updateTotal(); }
-
-  function startGame() {
-    const e=document.getElementById('easyRange').value, m=document.getElementById('mediumRange').value, h=document.getElementById('hardRange').value;
-    fetch(`/api/questions/start?categoryId=${selectedCat}&easy=${e}&medium=${m}&hard=${h}`).then(res=>res.json()).then(qs=>{
-      if(qs.length===0) { alert("Soru yok!"); return; }
-      currentQuestions=qs; qIndex=0; score=0; document.getElementById('btn-joker').disabled=false;
-      showScreen('question-screen'); showQuestion();
-    });
-  }
-
-  function showQuestion() {
-    if(qIndex>=currentQuestions.length) { endGame(); return; }
-    const q=currentQuestions[qIndex];
-
-    // --- YENİ: RESİM KONTROLÜ ---
-    const frame = document.getElementById('frame-container');
-    const img = document.getElementById('question-image');
-
-    if (q.imageUrl && q.imageUrl.trim() !== "") {
-      img.src = q.imageUrl;
-      frame.style.display = "block"; // Resmi göster
-    } else {
-      frame.style.display = "none"; // Resmi gizle
-    }
-    // ----------------------------
-
-    document.getElementById('question-text').innerText = q.questionText + ` (Zorluk: ${q.difficulty})`;
-    document.getElementById('score').innerText = score;
-    document.getElementById('feedback-msg').innerText = "";
-    startTimer();
-
-    const list = document.getElementById('options-list'); list.innerHTML='';
-    [{k:'A',t:q.optionA}, {k:'B',t:q.optionB}, {k:'C',t:q.optionC}, {k:'D',t:q.optionD}].forEach(o=>{
-      const btn=document.createElement('button'); btn.className='btn btn-option'; btn.id='opt-'+o.k;
-      btn.innerText=o.k+") "+o.t; btn.onclick=()=>checkAnswer(q.id,o.k,btn); list.appendChild(btn);
-    });
-  }
-
-  function checkAnswer(qId, sel, btn) {
-    clearInterval(timerInterval); document.querySelectorAll('.btn-option').forEach(b=>b.disabled=true);
-    fetch('/api/questions/check',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({questionId:qId,selectedOption:sel})})
-            .then(res=>res.json()).then(r=>{
-      score+=r.pointsChange; document.getElementById('score').innerText=score;
-      const fb=document.getElementById('feedback-msg');
-      if(r.correct) { btn.classList.add('correct'); fb.innerText="Doğru! (+"+r.pointsChange+")"; fb.style.color="green"; }
-      else { btn.classList.add('wrong'); fb.innerText="Yanlış! Cevap: "+r.correctAnswer+" ("+r.pointsChange+")"; fb.style.color="red"; }
-      setTimeout(nextQuestion,2000);
-    });
-  }
-  function nextQuestion() { qIndex++; showQuestion(); }
-
-  function endGame() {
-    showScreen('result-screen'); document.getElementById('final-score').innerText=score;
-    if(currentUser) fetch(`/api/users/score/${currentUser.id}?score=${score}`,{method:'POST'}).then(()=>currentUser.totalScore+=score);
+  /* ---------- Oturum ---------- */
+  function enterMenu() {
+    $('display-username').textContent = currentUser.username;
+    $('avatar').textContent = currentUser.username.charAt(0).toUpperCase();
+    $('menu-score').textContent = currentUser.totalScore;
+    loadCats(); showScreen('category-screen');
   }
 
   function login() {
-    const u=document.getElementById('username').value, p=document.getElementById('password').value;
-    fetch('/api/users/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})})
-            .then(res=>res.text()).then(t=>{
-      if(!t) { document.getElementById('login-msg').innerText="Hata!"; return; }
-      currentUser=JSON.parse(t);
-      if(currentUser.role==='ADMIN') window.location.href='/admin.html';
-      else { document.getElementById('display-username').innerText=currentUser.username; document.getElementById('menu-score').innerText=currentUser.totalScore; loadCats(); showScreen('category-screen'); }
-    });
+    const u = $('username').value.trim(), p = $('password').value;
+    if (!u || !p) { $('login-msg').textContent = 'Kullanıcı adı ve şifre gerekli.'; return; }
+    jsonPost('/api/users/login', { username: u, password: p })
+      .then(r => r.text()).then(t => {
+        if (!t) { $('login-msg').textContent = 'Kullanıcı adı veya şifre hatalı.'; return; }
+        currentUser = JSON.parse(t); $('login-msg').textContent = '';
+        if (currentUser.role === 'ADMIN') window.location.href = '/admin.html';
+        else enterMenu();
+      }).catch(() => $('login-msg').textContent = 'Sunucuya ulaşılamadı.');
   }
+
   function register() {
-    const u=document.getElementById('username').value, p=document.getElementById('password').value;
-    fetch('/api/users/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})}).then(res=>res.json()).then(u=>{ if(u) alert("Başarılı!"); else alert("Dolu!"); });
+    const u = $('username').value.trim(), p = $('password').value;
+    if (!u || !p) { $('login-msg').textContent = 'Kullanıcı adı ve şifre gerekli.'; return; }
+    jsonPost('/api/users/register', { username: u, password: p })
+      .then(r => r.text().then(t => ({ ok: r.ok, t }))).then(({ ok, t }) => {
+        if (ok) { toast('Kayıt başarılı! Şimdi giriş yapabilirsin 🎉'); $('login-msg').textContent = ''; }
+        else $('login-msg').textContent = t || 'Kayıt yapılamadı.';
+      }).catch(() => $('login-msg').textContent = 'Sunucuya ulaşılamadı.');
   }
+
+  function logout() {
+    fetch('/api/users/logout', { method: 'POST' }).catch(() => {});
+    currentUser = null; $('password').value = ''; showScreen('login-screen');
+  }
+  ['username', 'password'].forEach(id => $(id).addEventListener('keydown', e => { if (e.key === 'Enter') login(); }));
+
+  /* ---------- Kategoriler ---------- */
   function loadCats() {
-    fetch('/api/categories').then(res=>res.json()).then(cats=>{
-      const list=document.getElementById('category-list'); list.innerHTML='';
-      cats.forEach(c=>{ const btn=document.createElement('button'); btn.className='btn btn-primary'; btn.innerText=c.name; btn.onclick=()=>prepareGame(c.id); list.appendChild(btn); });
+    fetch('/api/categories').then(r => r.json()).then(cats => {
+      const list = $('category-list'); list.innerHTML = '';
+      cats.forEach(c => {
+        const b = document.createElement('button'); b.className = 'cat-card';
+        const icon = CAT_ICONS[c.name.toLowerCase()] || '❓';
+        b.innerHTML = `<span class="emoji">${icon}</span><div class="cname">${esc(c.name)}</div><div class="cdesc">${esc(c.description)}</div>`;
+        b.onclick = () => prepareGame(c.id, c.name);
+        list.appendChild(b);
+      });
     });
   }
-  function logout(){ currentUser=null; showScreen('login-screen'); }
-  function startTimer(){ clearInterval(timerInterval); let t=25; document.getElementById('timer').innerText=t; timerInterval=setInterval(()=>{ t--; document.getElementById('timer').innerText=t; if(t<=0){ clearInterval(timerInterval); document.querySelectorAll('.btn-option').forEach(b=>b.disabled=true); setTimeout(nextQuestion,2000); } },1000); }
-  function useJoker(){ const q=currentQuestions[qIndex]; fetch('/api/questions/joker/fifty-fifty/'+q.id).then(res=>res.json()).then(o=>{ o.forEach(k=>document.getElementById('opt-'+k).style.visibility='hidden'); document.getElementById('btn-joker').disabled=true; }); }
-  function showLeaderboard(){ fetch('/api/users/leaderboard').then(res=>res.json()).then(users=>{ const b=document.getElementById('leaderboard-body'); b.innerHTML=''; users.forEach((u,i)=>b.innerHTML+=`<tr><td>${i+1}</td><td>${u.username}</td><td>${u.totalScore}</td></tr>`); showScreen('leaderboard-screen'); }); }
+
+  /* ---------- Ayarlar ---------- */
+  function preset(e, m, h) { $('easyRange').value = e; $('mediumRange').value = m; $('hardRange').value = h; updateTotal(); }
+
+  function updateTotal() {
+    const e = +$('easyRange').value, m = +$('mediumRange').value, h = +$('hardRange').value;
+    $('easyCount').textContent = e; $('mediumCount').textContent = m; $('hardCount').textContent = h;
+    const total = e + m + h; $('totalQuestions').textContent = total;
+    const ok = total >= 1;
+    $('start-btn').disabled = !ok;
+    $('settings-msg').textContent = ok ? '' : 'En az 1 soru seçmelisin!';
+  }
+
+  function prepareGame(catId, catName) {
+    selectedCat = catId; selectedCatName = catName || '';
+    $('settings-title').textContent = `${CAT_ICONS[selectedCatName.toLowerCase()] || '🎯'} ${selectedCatName}`;
+    showScreen('settings-screen'); updateTotal();
+  }
+
+  /* ---------- Oyun ---------- */
+  function startGame() {
+    const e = $('easyRange').value, m = $('mediumRange').value, h = $('hardRange').value;
+    fetch(`/api/questions/start?categoryId=${selectedCat}&easy=${e}&medium=${m}&hard=${h}`)
+      .then(r => r.json()).then(qs => {
+        if (!qs.length) { toast('Bu kategoride soru bulunamadı!', 'err'); return; }
+        currentQuestions = qs; qIndex = 0; score = 0; streak = 0; bestStreak = 0; correctCount = 0; wrongCount = 0;
+        $('btn-joker').disabled = false;
+        showScreen('question-screen'); showQuestion();
+      }).catch(() => toast('Sorular yüklenemedi.', 'err'));
+  }
+
+  function showQuestion() {
+    if (qIndex >= currentQuestions.length) { endGame(); return; }
+    const q = currentQuestions[qIndex]; locked = false;
+
+    $('q-counter').textContent = `${qIndex + 1}/${currentQuestions.length}`;
+    $('progress-bar').style.width = (qIndex / currentQuestions.length * 100) + '%';
+    $('score').textContent = score; $('streak').textContent = streak;
+    $('feedback-msg').textContent = '';
+
+    const dn = ['', 'Kolay', 'Orta', 'Zor'][q.difficulty] || '';
+    const badge = $('diff-badge'); badge.textContent = `${dn} • ${[0, 10, 20, 30][q.difficulty] || 0} puan`; badge.className = 'badge d' + q.difficulty;
+
+    const frame = $('frame-container');
+    if (q.imageUrl && q.imageUrl.trim()) { $('question-image').src = q.imageUrl; frame.style.display = 'block'; }
+    else frame.style.display = 'none';
+
+    $('question-text').textContent = q.questionText;
+
+    const list = $('options-list'); list.innerHTML = '';
+    [['A', q.optionA], ['B', q.optionB], ['C', q.optionC], ['D', q.optionD]].forEach(([k, t], i) => {
+      const btn = document.createElement('button'); btn.className = 'btn btn-option'; btn.id = 'opt-' + k;
+      btn.innerHTML = `<span class="key">${k}</span><span>${esc(t)}</span>`;
+      btn.onclick = () => checkAnswer(q.id, k);
+      list.appendChild(btn);
+    });
+    startTimer();
+  }
+
+  function setOptionsDisabled() { document.querySelectorAll('.btn-option').forEach(b => b.disabled = true); }
+
+  function checkAnswer(qId, sel) {
+    if (locked) return; locked = true;
+    clearInterval(timerInterval); setOptionsDisabled();
+    fetch('/api/questions/check', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ questionId: qId, selectedOption: sel }) })
+      .then(r => r.json()).then(r => {
+        score += r.pointsChange; $('score').textContent = score;
+        const fb = $('feedback-msg');
+        const correctBtn = $('opt-' + r.correctAnswer);
+        if (r.correct) {
+          correctCount++; streak++; bestStreak = Math.max(bestStreak, streak);
+          correctBtn.classList.add('correct'); fb.style.color = 'var(--good)';
+          fb.textContent = `Doğru! +${r.pointsChange}` + (streak >= 3 ? `  🔥 ${streak}'li seri!` : '');
+        } else {
+          wrongCount++; streak = 0;
+          if (sel && $('opt-' + sel)) $('opt-' + sel).classList.add('wrong');
+          correctBtn.classList.add('correct'); fb.style.color = 'var(--bad)';
+          fb.textContent = sel ? `Yanlış! ${r.pointsChange}` : `⏰ Süre doldu! ${r.pointsChange}`;
+        }
+        $('streak').textContent = streak;
+        setTimeout(() => { qIndex++; showQuestion(); }, 1800);
+      }).catch(() => { toast('Bağlantı hatası', 'err'); locked = false; });
+  }
+
+  function startTimer() {
+    clearInterval(timerInterval);
+    let t = QUESTION_TIME; const ring = $('timer-ring'), box = $('timer-box'), C = 150.8;
+    const paint = () => {
+      $('timer').textContent = t; box.classList.toggle('low', t <= 5);
+      ring.style.strokeDashoffset = C * (1 - t / QUESTION_TIME);
+    };
+    ring.style.transition = 'none'; ring.style.strokeDashoffset = 0; void ring.getBoundingClientRect(); ring.style.transition = '';
+    paint();
+    timerInterval = setInterval(() => {
+      t--; paint();
+      if (t <= 0) { clearInterval(timerInterval); checkAnswer(currentQuestions[qIndex].id, ''); }
+    }, 1000);
+  }
+
+  function useJoker() {
+    if (locked) return;
+    const q = currentQuestions[qIndex]; $('btn-joker').disabled = true;
+    fetch('/api/questions/joker/fifty-fifty/' + q.id).then(r => r.json())
+      .then(o => o.forEach(k => $('opt-' + k).classList.add('hidden')));
+  }
+
+  document.addEventListener('keydown', e => {
+    if (!$('question-screen').classList.contains('active-screen') || locked) return;
+    const map = { a: 'A', b: 'B', c: 'C', d: 'D', 1: 'A', 2: 'B', 3: 'C', 4: 'D' };
+    const k = map[e.key.toLowerCase()]; if (!k) return;
+    const btn = $('opt-' + k); if (btn && !btn.classList.contains('hidden')) btn.click();
+  });
+
+  function endGame() {
+    $('progress-bar').style.width = '100%';
+    const total = currentQuestions.length, ratio = correctCount / total;
+    $('final-score').textContent = score;
+    $('res-correct').textContent = correctCount; $('res-wrong').textContent = wrongCount; $('res-best').textContent = bestStreak;
+    const [emoji, title] = ratio === 1 ? ['👑', 'Kusursuz! Efsanesin!'] : ratio >= .7 ? ['🏆', 'Harika iş çıkardın!'] : ratio >= .4 ? ['👍', 'Fena değil, devam et!'] : ['📖', 'Biraz daha çalışmalı!'];
+    $('result-emoji').textContent = emoji; $('result-title').textContent = title;
+    showScreen('result-screen');
+    if (ratio >= .7) confetti();
+    if (currentUser) fetch(`/api/users/score/${currentUser.id}?score=${score}`, { method: 'POST' }).then(() => currentUser.totalScore += score);
+  }
+
+  /* ---------- Liderlik ---------- */
+  function showLeaderboard() {
+    fetch('/api/users/leaderboard').then(r => r.json()).then(users => {
+      const medals = ['🥇', '🥈', '🥉'];
+      const podium = $('podium'); podium.innerHTML = '';
+      [1, 0, 2].forEach(i => {
+        const u = users[i]; if (!u) return;
+        podium.innerHTML += `<div class="p p${i + 1}"><div class="medal">${medals[i]}</div><div class="pn">${esc(u.username)}</div><div class="s" style="color:var(--warn);font-weight:800">${u.totalScore}</div></div>`;
+      });
+      const body = $('leaderboard-body'); body.innerHTML = '';
+      users.slice(3).forEach((u, i) => {
+        body.innerHTML += `<div class="lb-row ${currentUser && u.id === currentUser.id ? 'me' : ''}"><span class="rank">${i + 4}</span><span class="n">${esc(u.username)}</span><span class="s">${u.totalScore}</span></div>`;
+      });
+      showScreen('leaderboard-screen');
+    });
+  }
+
+  /* ---------- Konfeti ---------- */
+  function confetti() {
+    const cv = $('confetti'), ctx = cv.getContext('2d');
+    cv.width = innerWidth; cv.height = innerHeight;
+    const colors = ['#7c5cff', '#00d4ff', '#ff6ec7', '#ffc857', '#2ee59d'];
+    const parts = Array.from({ length: 140 }, () => ({
+      x: Math.random() * cv.width, y: -20 - Math.random() * cv.height * .5, r: 4 + Math.random() * 6,
+      vx: -2 + Math.random() * 4, vy: 2 + Math.random() * 4, c: colors[(Math.random() * colors.length) | 0], rot: Math.random() * 6
+    }));
+    let frames = 0;
+    (function tick() {
+      ctx.clearRect(0, 0, cv.width, cv.height);
+      parts.forEach(p => { p.x += p.vx; p.y += p.vy; p.rot += .1; ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.fillStyle = p.c; ctx.fillRect(-p.r, -p.r / 2, p.r * 2, p.r); ctx.restore(); });
+      if (++frames < 200) requestAnimationFrame(tick); else ctx.clearRect(0, 0, cv.width, cv.height);
+    })();
+  }
 </script>
 </body>
 </html>
