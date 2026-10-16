@@ -150,3 +150,7 @@ src/main
 ## 📝 Notlar
 
 Bu proje bir öğrenme/hobi projesidir. Puan, oyun sonunda istemciden gönderildiği için kararlı bir hile koruması yoktur ve CSRF koruması kapalıdır (API yalnızca aynı siteden kullanılır). Gerçek bir yayından önce bunlar gözden geçirilmelidir.
+
+---
+
+Geliştirici: [Melih Ali Çağman](https://github.com/MelihAliCagman)
