@@ -311,6 +311,13 @@
       }).catch(() => $('login-msg').textContent = 'Sunucuya ulaşılamadı.');
   }
 
+  // Sayfa yenilenirse açık oturumu geri yükle (puan sunucudan gelir)
+  fetch('/api/users/me').then(r => r.ok ? r.json() : null).then(u => {
+    if (!u) return;
+    if (u.role === 'ADMIN') return;
+    currentUser = u; enterMenu();
+  }).catch(() => {});
+
   function logout() {
     fetch('/api/users/logout', { method: 'POST' }).catch(() => {});
     currentUser = null; $('password').value = ''; showScreen('login-screen');

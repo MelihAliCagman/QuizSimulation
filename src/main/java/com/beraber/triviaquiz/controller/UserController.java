@@ -66,6 +66,13 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
+    // Açık oturumdaki kullanıcı (sayfa yenilenince oturumu geri yüklemek için)
+    @GetMapping("/me")
+    public ResponseEntity<User> me(Authentication auth) {
+        User me = userService.findByUsername(auth.getName());
+        return me == null ? ResponseEntity.status(HttpStatus.UNAUTHORIZED).build() : ResponseEntity.ok(me);
+    }
+
     // Çıkış: POST /api/users/logout
     @PostMapping("/logout")
     public void logout(HttpServletRequest request) {
