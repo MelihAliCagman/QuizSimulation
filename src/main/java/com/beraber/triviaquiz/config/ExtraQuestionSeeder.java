@@ -43,7 +43,6 @@ public class ExtraQuestionSeeder implements CommandLineRunner {
         q(c, "Mustafa Kemal Atatürk hangi şehirde doğmuştur?", "Selanik", "İstanbul", "Ankara", "Manastır", 1);
         q(c, "Atatürk'ün Samsun'a çıkarak Kurtuluş Savaşı'nı başlattığı tarih hangisidir?", "19 Mayıs 1919", "23 Nisan 1920", "30 Ağustos 1922", "29 Ekim 1923", 1);
         q(c, "Çanakkale Deniz Zaferi hangi yıl kazanılmıştır?", "1915", "1914", "1916", "1918", 2);
-        q(c, "Fransız Devrimi hangi yıl başlamıştır?", "1789", "1776", "1815", "1848", 2);
         q(c, "Kanuni Sultan Süleyman hangi padişahın oğludur?", "Yavuz Sultan Selim", "II. Bayezid", "Fatih Sultan Mehmet", "I. Murad", 2);
         q(c, "Türkiye'de harf devrimi (Latin alfabesine geçiş) hangi yıl yapıldı?", "1928", "1923", "1934", "1925", 2);
         q(c, "Roma İmparatorluğu'nun ilk imparatoru kimdir?", "Augustus", "Jül Sezar", "Neron", "Konstantin", 3);
@@ -55,7 +54,6 @@ public class ExtraQuestionSeeder implements CommandLineRunner {
 
     private void seedScience() {
         Category c = category("Bilim", "Fizik, Kimya, Biyoloji ve Uzay.");
-        q(c, "Dünya'nın doğal uydusu hangisidir?", "Ay", "Mars", "Phobos", "Titan", 1);
         q(c, "Güneş Sistemi'ndeki en büyük gezegen hangisidir?", "Jüpiter", "Satürn", "Neptün", "Dünya", 1);
         q(c, "Bitkiler fotosentez sırasında havadan hangi gazı alır?", "Karbondioksit", "Oksijen", "Azot", "Hidrojen", 1);
         q(c, "İnsan vücudundaki en büyük organ hangisidir?", "Deri", "Karaciğer", "Akciğer", "Beyin", 1);
